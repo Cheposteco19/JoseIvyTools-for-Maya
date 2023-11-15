@@ -1,5 +1,7 @@
 # JoseTools-for-Maya
 
+This shelf of tools will help you to quickly iterate in you high to low resolution baking and UV editing processes in Maya.
+
 How to install:
 1. Download ZIP and extract the content.
 1. Press the "Windows" key and the "R" key at the same time.
