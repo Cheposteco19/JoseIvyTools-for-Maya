@@ -11,12 +11,14 @@ TILEABLE_2M_BUTTON_NAME='tileable_2m_button'
 TILEABLE_CUSTOM_BUTTON_NAME='tileable_custom_button'
 CUSTOM_DENSITY_TEXTBOX_NAME='custom_density_textbox'
 CUSTOM_MAP_SIZE_TEXTBOX_NAME='custom_map_size_textbox'
+RESET_MOVE_TOOL_BUTTON_NAME='reset_move_tool_button'
+PRESERVE_UVS_CHECKBOX_NAME='preserve_UVs_checkbox'
 
 def show_ui():
     if cmds.window(WINDOW_NAME,query=True,exists=True):
         cmds.deleteUI(WINDOW_NAME)
 
-    cmds.window(WINDOW_NAME, title='UV tools', widthHeight=(250,185))
+    cmds.window(WINDOW_NAME, title='UV tools', widthHeight=(250,220))
 
     #Baked column
     cmds.columnLayout(adjustableColumn=True)
@@ -53,9 +55,16 @@ def show_ui():
     cmds.setParent('..')
     cmds.setParent('..')
 
+    #Last
+    cmds.columnLayout(adjustableColumn=True)
+    cmds.button(RESET_MOVE_TOOL_BUTTON_NAME, label='Reset Move Tool', command=uv_tools_core.reset_move_tool)
+    cmds.checkBox(PRESERVE_UVS_CHECKBOX_NAME,label="preserve UVs",onCommand=uv_tools_core.preserve_uvs,offCommand=uv_tools_core.dont_preserve_uvs)
+    cmds.setParent('..')
+    cmds.setParent('..')
+
     #Credits
     cmds.rowLayout(numberOfColumns=2,adjustableColumn=2)
-    cmds.text(label='V 1.0.0')
+    cmds.text(label='V 1.0.1')
     cmds.text(label='GD67_JoseMunguia   ', align='right')
 
     cmds.showWindow()
