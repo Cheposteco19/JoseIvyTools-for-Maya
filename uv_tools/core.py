@@ -75,7 +75,7 @@ def unfold(*args):
     mm.eval("texOrientShells;")
 
     #Layout
-    cmds.u3dLayout(selected_items)
+    cmds.polyMultiLayoutUV(lm=1,sc=1,rbf=1,fr=1,ps=0.2,l=2,gu=1,gv=1,psc=0,su=1,sv=1,ou=0,ov=0)
 
     # Set the user to UVmode
     cmds.selectMode(component=True)
