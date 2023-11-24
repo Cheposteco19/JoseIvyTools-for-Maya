@@ -67,6 +67,13 @@ def unfold(*args):
     cmds.selectMode(object=True)
     selected_items = cmds.ls(selection=True)
 
+    uv_maps = []
+    objects = get_objects(selected_items)
+
+    for item in objects:
+        map_index = cmds.polyEvaluate(item, uvcoord=True) - 1
+        uv_maps.append('{}.map[0:{}]'.format(item, map_index))
+
     #Unfold
     for item in selected_items:
         cmds.unfold(item,i=5000, ss=0.001, gb=0, gmb=0.5, pub=0, ps=0, oa=0, us=1, s=0.02)
@@ -81,7 +88,7 @@ def unfold(*args):
     cmds.selectMode(component=True)
     cmds.selectType(polymeshUV=True)
 
-    select_objects(selected_items)
+    clean_selection(objects,uv_maps)
 
 def set_cut_sew_tool(*args):
     cmds.SetCutSewUVTool()
