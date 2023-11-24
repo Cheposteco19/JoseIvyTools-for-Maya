@@ -81,6 +81,8 @@ def unfold(*args):
     cmds.selectMode(component=True)
     cmds.selectType(polymeshUV=True)
 
+    select_objects(selected_items)
+
 def set_cut_sew_tool(*args):
     cmds.SetCutSewUVTool()
 
