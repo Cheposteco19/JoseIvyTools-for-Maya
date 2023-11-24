@@ -1,5 +1,6 @@
 from maya import cmds
 from uv_tools import core as uv_tools_core
+import maya.mel as mm
 
 WINDOW_NAME='uv_editing_tool_ui'
 CAMERA_BASED_BUTTON_NAME='camera_based_button'
@@ -13,6 +14,7 @@ CUSTOM_DENSITY_FLOATBOX_NAME= 'custom_density_textbox'
 CUSTOM_MAP_SIZE_INTBOX_NAME= 'custom_map_size_textbox'
 RESET_MOVE_TOOL_BUTTON_NAME='reset_move_tool_button'
 PRESERVE_UVS_CHECKBOX_NAME='preserve_UVs_checkbox'
+GET_TEXEL_DENSITY_BUTTON_NAME='get_texel_density_button'
 
 def show_ui():
     if cmds.window(WINDOW_NAME,query=True,exists=True):
@@ -28,7 +30,7 @@ def show_ui():
     cmds.button(CAMERA_BASED_BUTTON_NAME, label='Camera-based', command=uv_tools_core.camera_based)
     cmds.button(CUT_SEW_BUTTON_NAME, label='Cut/Sew\nTool', height=38, command=uv_tools_core.set_cut_sew_tool)
     cmds.button(UNFOLD_BUTTON_NAME, label='Unfold', height=47, command=uv_tools_core.unfold)
-    cmds.text(label='',height=57)
+    cmds.text(label='',height=47)
     cmds.setParent('..')
 
     #Tiled column
@@ -40,17 +42,21 @@ def show_ui():
     #Density first column
     cmds.columnLayout(adjustableColumn=True)
     cmds.button(TILEABLE_1M_BUTTON_NAME, label='Tileable 1M\n(10.24|1024)',command=texel_density_1m)
+    cmds.button(GET_TEXEL_DENSITY_BUTTON_NAME,label='Get',command=get_texel_density)
     cmds.text(label='Texel density\n(px/inch)')
-    cmds.floatField(CUSTOM_DENSITY_FLOATBOX_NAME, width=10, value=10.24, precision=2)
-    cmds.text(label='Map size')
-    cmds.intField(CUSTOM_MAP_SIZE_INTBOX_NAME, width=10, value=4096)
+    cmds.floatField(CUSTOM_DENSITY_FLOATBOX_NAME, value=10.24, precision=2)
+
+
     cmds.button(RESET_MOVE_TOOL_BUTTON_NAME, label='Reset Tools', command=uv_tools_core.reset_tools, width=10)
     cmds.setParent('..')
 
     #Density second column
     cmds.columnLayout(adjustableColumn=True)
     cmds.button(TILEABLE_2M_BUTTON_NAME, label='Tileable 2M\n(10.24|2048)',command=texel_density_2m)
-    cmds.button(TILEABLE_CUSTOM_BUTTON_NAME, label='Custom\nTexel\nDensity',height=80,command=texel_density_custom)
+    cmds.button(TILEABLE_CUSTOM_BUTTON_NAME, label='Set',command=texel_density_custom)
+    cmds.text(label='Map size', height=27)
+    cmds.intField(CUSTOM_MAP_SIZE_INTBOX_NAME, value=4096)
+
     cmds.checkBox(PRESERVE_UVS_CHECKBOX_NAME, label="preserve UVs", onCommand=uv_tools_core.preserve_uvs, offCommand=uv_tools_core.dont_preserve_uvs, height=22)
     cmds.setParent('..')
     cmds.setParent('..')
@@ -60,7 +66,7 @@ def show_ui():
 
     #Credits
     cmds.rowLayout(numberOfColumns=2,adjustableColumn=2)
-    cmds.text(label='V 1.0.2')
+    cmds.text(label='V 1.0.3')
     cmds.text(label='GD67_JoseMunguia   ', align='right')
 
     cmds.showWindow()
@@ -78,3 +84,8 @@ def texel_density_custom(*args):
 
 def uncheck_preserve_uvs():
     cmds.checkBox(PRESERVE_UVS_CHECKBOX_NAME,edit=True,value=False)
+
+def get_texel_density(*args):
+    map_size=cmds.intField(CUSTOM_MAP_SIZE_INTBOX_NAME,query=True,value=True)
+    texel_density=mm.eval("texGetTexelDensity(%i);" % map_size)
+    cmds.floatField(CUSTOM_DENSITY_FLOATBOX_NAME,edit=True,value=texel_density)
