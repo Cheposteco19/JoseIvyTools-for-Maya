@@ -1,5 +1,6 @@
 from maya import cmds
 import maya.mel as mm
+from uv_tools import ui as uv_tools_ui
 
 def select_objects(objects):
     cmds.selectMode(object=True)
@@ -131,9 +132,14 @@ def set_tileable_size(density,map_size):
     clean_selection(objects,edges)
 
 
-def reset_move_tool(*args):
+def reset_tools(*args):
     cmds.resetTool('Move')
-
+    cmds.resetTool('Rotate')
+    cmds.resetTool('Scale')
+    cmds.setToolTo('Rotate')
+    cmds.setToolTo('Scale')
+    cmds.setToolTo('Move')
+    uv_tools_ui.uncheck_preserve_uvs()
 
 def preserve_uvs(*args):
     mm.eval('setTRSPreserveUVs true;')
