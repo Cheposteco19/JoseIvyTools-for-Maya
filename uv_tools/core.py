@@ -31,6 +31,9 @@ def auto_unwrap(*args):
         faces = '{}.f[0:{}]'.format(item, face_index)
         cmds.polyAutoProjection(faces)
 
+    # Layout
+    cmds.polyMultiLayoutUV(lm=1, sc=1, rbf=1, fr=1, ps=0.2, l=2, gu=1, gv=1, psc=0, su=1, sv=1, ou=0, ov=0)
+
     select_objects(objects)
 
 def camera_based(*args):
