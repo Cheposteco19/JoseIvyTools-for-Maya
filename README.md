@@ -9,4 +9,10 @@ How to install:
 1. Click "OK" and open Maya (if Maya is allready open, close it and then open it again).
 1. The shelf with the tools loaded will be there ready to be used.
 
+If the installer doesn't work:
+1. Copy the "baking_tools" and "uv_tools" folders into Documents/maya/scripts
+1. Copy the "shelf_Jose_Tools.mel" into Documents/maya/[YEAR OF THE MAYA VERSION:ex.(2023,2024)]/prefs/shelves
+1. Open Maya (if Maya is allready open, close it and then open it again).
+1. The shelf with the tools loaded will be there ready to be used.
+
 Created by: Jose Munguia

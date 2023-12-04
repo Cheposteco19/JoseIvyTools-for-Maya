@@ -17,6 +17,7 @@ PRESERVE_UVS_CHECKBOX_NAME='preserve_UVs_checkbox'
 GET_TEXEL_DENSITY_BUTTON_NAME='get_texel_density_button'
 
 def show_ui():
+    """Creates the window"""
     if cmds.window(WINDOW_NAME,query=True,exists=True):
         cmds.deleteUI(WINDOW_NAME)
 
@@ -29,7 +30,7 @@ def show_ui():
     cmds.text(label='BAKED',font='boldLabelFont')
     cmds.button(CAMERA_BASED_BUTTON_NAME, label='Camera-based', command=uv_tools_core.camera_based)
     cmds.button(CUT_SEW_BUTTON_NAME, label='Cut/Sew\nTool', height=38, command=uv_tools_core.set_cut_sew_tool)
-    cmds.button(UNFOLD_BUTTON_NAME, label='Unfold', height=47, command=uv_tools_core.unfold)
+    cmds.button(UNFOLD_BUTTON_NAME, label='Unfold', height=47, command=uv_tools_core.unfold,annotation='unfold/orient shells/layout/uv selection')
     cmds.text(label='',height=47)
     cmds.setParent('..')
 
@@ -47,7 +48,7 @@ def show_ui():
     cmds.floatField(CUSTOM_DENSITY_FLOATBOX_NAME, value=10.24, precision=2)
 
 
-    cmds.button(RESET_MOVE_TOOL_BUTTON_NAME, label='Reset Tools', command=uv_tools_core.reset_tools, width=10)
+    cmds.button(RESET_MOVE_TOOL_BUTTON_NAME, label='Reset Tools', command=uv_tools_core.reset_tools, width=10,annotation='reset move/rotate/scale tools')
     cmds.setParent('..')
 
     #Density second column
@@ -66,7 +67,7 @@ def show_ui():
 
     #Credits
     cmds.rowLayout(numberOfColumns=2,adjustableColumn=2)
-    cmds.text(label='V 1.0.3')
+    cmds.text(label='V 1.1.0')
     cmds.text(label='GD67_JoseMunguia   ', align='right')
 
     cmds.showWindow()
@@ -78,14 +79,21 @@ def texel_density_2m(*args):
     uv_tools_core.set_tileable_size(10.24, 2048)
 
 def texel_density_custom(*args):
+    """Reads the user input for setting the new texel density for the selection"""
     density=cmds.floatField(CUSTOM_DENSITY_FLOATBOX_NAME, query=True, value=True)
     map_size=cmds.intField(CUSTOM_MAP_SIZE_INTBOX_NAME, query=True, value=True)
     uv_tools_core.set_tileable_size(density, map_size)
 
 def uncheck_preserve_uvs():
+    """
+
+    Unchecks the preserve UV checkbox in the window
+
+    """
     cmds.checkBox(PRESERVE_UVS_CHECKBOX_NAME,edit=True,value=False)
 
 def get_texel_density(*args):
+    """Gets the texel density of the selection and writes it in the texel density float box"""
     map_size=cmds.intField(CUSTOM_MAP_SIZE_INTBOX_NAME,query=True,value=True)
     texel_density=mm.eval("texGetTexelDensity(%i);" % map_size)
     cmds.floatField(CUSTOM_DENSITY_FLOATBOX_NAME,edit=True,value=texel_density)
