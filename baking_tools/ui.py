@@ -1,4 +1,4 @@
-from baking_tools import core as bake_tester_core
+from baking_tools import core as baking_tools_core
 from maya import cmds
 import maya.mel as mm
 import json
@@ -22,12 +22,23 @@ DIRECTORY_HISTORY_NAME='directory_history'
 DIRECTORY_HISTORY_ROOT_DIR = mm.eval('getenv "MAYA_APP_DIR";')
 DIRECTORY_HISTORY_EXT= 'json'
 
+#Colors
+LIGHT_GREEN=(.2,.4,.2)
+GREEN=(.2,.3,.2)
+DARK_GREEN=(.1,.2,.1)
+LIGHT_BLUE=(.2,.2,.4)
+BLUE=(.2,.2,.3)
+DARK_BLUE=(.1,.1,.2)
+
 def show_ui():
     """
 
     Creates the window
 
     """
+    #Initialize Unfold3D
+    cmds.loadPlugin("Unfold3D.mll")
+
     # Delete old window
     if cmds.window(WINDOW_NAME, exists=True,query=True):
         cmds.deleteUI(WINDOW_NAME)
@@ -41,106 +52,111 @@ def show_ui():
 
     #Auto-Unwrap
     cmds.columnLayout(adjustableColumn=True, columnOffset=('both',10))
-    cmds.checkBox(CHECK_BOX_NAME,label="Auto-Unwrap Slot 1",annotation="auto-unwrap/unfold/unlock normals/soften-harden texture borders/kills history and numbers")
+    cmds.columnLayout(adjustableColumn=True, backgroundColor=BLUE)
+    cmds.frameLayout('Baked', collapsable=True, collapse=True, backgroundColor=DARK_BLUE)
+    cmds.checkBox(CHECK_BOX_NAME,label="Auto-Unwrap Slot 1",annotation="auto-unwrap/unfold/unlock normals/soften-harden texture borders/kills history and numbers", highlightColor=DARK_BLUE)
 
     # Browse Low Export
     cmds.rowLayout(numberOfColumns=4,adjustableColumn=2)
     cmds.text(label='1 ')
     if paths_dict.get(LOW_POLY_PATH_TEXT_BOX_NAME) is not None:
-        cmds.textField(LOW_POLY_PATH_TEXT_BOX_NAME, text=paths_dict[LOW_POLY_PATH_TEXT_BOX_NAME])
+        cmds.textField(LOW_POLY_PATH_TEXT_BOX_NAME, text=paths_dict[LOW_POLY_PATH_TEXT_BOX_NAME], backgroundColor=DARK_BLUE)
     else:
-        cmds.textField(LOW_POLY_PATH_TEXT_BOX_NAME)
-    cmds.button(label='...',command=browse_low)
-    cmds.button(label='Export LOW',command=low_exportFBX,width=73)
+        cmds.textField(LOW_POLY_PATH_TEXT_BOX_NAME, backgroundColor=DARK_BLUE)
+    cmds.button(label='...',command=browse_low, backgroundColor=LIGHT_BLUE)
+    cmds.button(label='Export LOW',command=low_exportFBX,width=73, backgroundColor=LIGHT_BLUE)
     cmds.setParent('..')
 
     # Browse High Export
     cmds.rowLayout(numberOfColumns=4,adjustableColumn=2)
     cmds.text(label='2 ')
     if paths_dict.get(HIGH_POLY_PATH_TEXT_BOX_NAME) is not None:
-        cmds.textField(HIGH_POLY_PATH_TEXT_BOX_NAME, text=paths_dict[HIGH_POLY_PATH_TEXT_BOX_NAME])
+        cmds.textField(HIGH_POLY_PATH_TEXT_BOX_NAME, text=paths_dict[HIGH_POLY_PATH_TEXT_BOX_NAME], backgroundColor=DARK_BLUE)
     else:
-        cmds.textField(HIGH_POLY_PATH_TEXT_BOX_NAME)
-    cmds.button(label='...',command=browse_high)
-    cmds.button(label='Export HIGH',command=high_exportFBX)
+        cmds.textField(HIGH_POLY_PATH_TEXT_BOX_NAME, backgroundColor=DARK_BLUE)
+    cmds.button(label='...',command=browse_high, backgroundColor=LIGHT_BLUE)
+    cmds.button(label='Export HIGH',command=high_exportFBX, backgroundColor=LIGHT_BLUE)
+    cmds.setParent('..')
+    cmds.setParent('..')
     cmds.setParent('..')
 
-    cmds.frameLayout('Extra slots',collapsable=True,collapse=True)
+    cmds.columnLayout(adjustableColumn=True, backgroundColor=GREEN)
+    cmds.frameLayout('Tiled',collapsable=True,collapse=True, backgroundColor=DARK_GREEN)
     # Browse Extra Export 1
     cmds.rowLayout(numberOfColumns=4, adjustableColumn=2)
     cmds.text(label='3 ')
     if paths_dict.get(EXTRA_PATH_TEXT_BOX_NAME_1) is not None:
-        cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_1, text=paths_dict[EXTRA_PATH_TEXT_BOX_NAME_1])
+        cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_1, text=paths_dict[EXTRA_PATH_TEXT_BOX_NAME_1], backgroundColor=DARK_GREEN)
     else:
-        cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_1)
-    cmds.button(label='...', command=browse_extra_1)
-    cmds.button(label='Export', command=extra_exportFBX1)
+        cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_1, backgroundColor=DARK_GREEN)
+    cmds.button(label='...', command=browse_extra_1, backgroundColor=LIGHT_GREEN)
+    cmds.button(label='Export', command=extra_exportFBX1, backgroundColor=LIGHT_GREEN)
     cmds.setParent('..')
 
     # Browse Extra Export 2
     cmds.rowLayout(numberOfColumns=4, adjustableColumn=2)
     cmds.text(label='4 ')
     if paths_dict.get(EXTRA_PATH_TEXT_BOX_NAME_2) is not None:
-        cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_2, text=paths_dict[EXTRA_PATH_TEXT_BOX_NAME_2])
+        cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_2, text=paths_dict[EXTRA_PATH_TEXT_BOX_NAME_2], backgroundColor=DARK_GREEN)
     else:
-        cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_2)
-    cmds.button(label='...', command=browse_extra_2)
-    cmds.button(label='Export', command=extra_exportFBX2)
+        cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_2, backgroundColor=DARK_GREEN)
+    cmds.button(label='...', command=browse_extra_2, backgroundColor=LIGHT_GREEN)
+    cmds.button(label='Export', command=extra_exportFBX2, backgroundColor=LIGHT_GREEN)
     cmds.setParent('..')
 
     # Browse Extra Export 3
     cmds.rowLayout(numberOfColumns=4, adjustableColumn=2)
     cmds.text(label='5 ')
     if paths_dict.get(EXTRA_PATH_TEXT_BOX_NAME_3) is not None:
-        cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_3, text=paths_dict[EXTRA_PATH_TEXT_BOX_NAME_3])
+        cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_3, text=paths_dict[EXTRA_PATH_TEXT_BOX_NAME_3], backgroundColor=DARK_GREEN)
     else:
-        cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_3)
-    cmds.button(label='...', command=browse_extra_3)
-    cmds.button(label='Export', command=extra_exportFBX3)
+        cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_3, backgroundColor=DARK_GREEN)
+    cmds.button(label='...', command=browse_extra_3, backgroundColor=LIGHT_GREEN)
+    cmds.button(label='Export', command=extra_exportFBX3, backgroundColor=LIGHT_GREEN)
     cmds.setParent('..')
 
     # Browse Extra Export 4
     cmds.rowLayout(numberOfColumns=4, adjustableColumn=2)
     cmds.text(label='6 ')
     if paths_dict.get(EXTRA_PATH_TEXT_BOX_NAME_4) is not None:
-        cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_4, text=paths_dict[EXTRA_PATH_TEXT_BOX_NAME_4])
+        cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_4, text=paths_dict[EXTRA_PATH_TEXT_BOX_NAME_4], backgroundColor=DARK_GREEN)
     else:
-        cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_4)
-    cmds.button(label='...', command=browse_extra_4)
-    cmds.button(label='Export', command=extra_exportFBX4)
+        cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_4, backgroundColor=DARK_GREEN)
+    cmds.button(label='...', command=browse_extra_4, backgroundColor=LIGHT_GREEN)
+    cmds.button(label='Export', command=extra_exportFBX4, backgroundColor=LIGHT_GREEN)
     cmds.setParent('..')
 
     # Browse Extra Export 5
     cmds.rowLayout(numberOfColumns=4, adjustableColumn=2)
     cmds.text(label='7 ')
     if paths_dict.get(EXTRA_PATH_TEXT_BOX_NAME_5) is not None:
-        cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_5, text=paths_dict[EXTRA_PATH_TEXT_BOX_NAME_5])
+        cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_5, text=paths_dict[EXTRA_PATH_TEXT_BOX_NAME_5], backgroundColor=DARK_GREEN)
     else:
-        cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_5)
-    cmds.button(label='...', command=browse_extra_5)
-    cmds.button(label='Export', command=extra_exportFBX5)
+        cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_5, backgroundColor=DARK_GREEN)
+    cmds.button(label='...', command=browse_extra_5, backgroundColor=LIGHT_GREEN)
+    cmds.button(label='Export', command=extra_exportFBX5, backgroundColor=LIGHT_GREEN)
     cmds.setParent('..')
 
     # Browse Extra Export 6
     cmds.rowLayout(numberOfColumns=4, adjustableColumn=2)
     cmds.text(label='8 ')
     if paths_dict.get(EXTRA_PATH_TEXT_BOX_NAME_6) is not None:
-        cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_6, text=paths_dict[EXTRA_PATH_TEXT_BOX_NAME_6])
+        cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_6, text=paths_dict[EXTRA_PATH_TEXT_BOX_NAME_6], backgroundColor=DARK_GREEN)
     else:
-        cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_6)
-    cmds.button(label='...', command=browse_extra_6)
-    cmds.button(label='Export', command=extra_exportFBX6)
+        cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_6, backgroundColor=DARK_GREEN)
+    cmds.button(label='...', command=browse_extra_6, backgroundColor=LIGHT_GREEN)
+    cmds.button(label='Export', command=extra_exportFBX6, backgroundColor=LIGHT_GREEN)
     cmds.setParent('..')
-
+    cmds.setParent('..')
     cmds.setParent('..')
 
     #Credits
     cmds.rowLayout(numberOfColumns=2, adjustableColumn=2)
-    cmds.text(label='V 1.1.0')
+    cmds.text(label='V 1.1.1')
     cmds.text(label='GD67_JoseMunguia   ', align='right')
 
     cmds.setParent('..')
-    cmds.dockControl(DOCK_CONTROL_NAME,floating=True,label='Bake tester',content=WINDOW_NAME,area='left',width=500,height=100,allowedArea=('top','bottom'))
+    cmds.dockControl(DOCK_CONTROL_NAME,floating=True,label='Exporter',content=WINDOW_NAME,area='left',width=500,height=100,allowedArea=('top','bottom'))
 
     # Show window
     cmds.showWindow()
@@ -191,7 +207,8 @@ def browse(textbox):
 def low_exportFBX(*args):
     """Checks if auto unwrap is necesary and exports the selectction to the low poly path"""
     if cmds.checkBox(CHECK_BOX_NAME,query=True,value=True)==True:
-        bake_tester_core.auto_unwrap()
+        baking_tools_core.auto_unwrap()
+    baking_tools_core.soft_texture_borders()
     exportFBX(LOW_POLY_PATH_TEXT_BOX_NAME)
 
 def high_exportFBX(*args):

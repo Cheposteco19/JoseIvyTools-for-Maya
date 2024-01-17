@@ -65,7 +65,7 @@ def auto_unwrap(*args):
         cmds.polyAutoProjection(faces)
 
     # Layout
-    cmds.polyMultiLayoutUV(lm=1, sc=1, rbf=1, fr=1, ps=0.2, l=2, gu=1, gv=1, psc=0, su=1, sv=1, ou=0, ov=0)
+    cmds.u3dLayout(res=256, scl=1, spc=0.001953125, box=(0,1,0,1))
 
     #Select objects again
     select_objects(objects)
@@ -127,13 +127,13 @@ def unfold(*args):
 
     #Unfold
     for item in selected_items:
-        cmds.unfold(item,i=5000, ss=0.001, gb=0, gmb=0.5, pub=0, ps=0, oa=0, us=1, s=0.02)
+        cmds.u3dUnfold(item,ite=1, p=0, bi=1, tf=1, ms=1024, rs=2)
 
     #Orient Shells
     mm.eval("texOrientShells;")
 
     #Layout
-    cmds.polyMultiLayoutUV(lm=1,sc=1,rbf=1,fr=1,ps=0.2,l=2,gu=1,gv=1,psc=0,su=1,sv=1,ou=0,ov=0)
+    cmds.u3dLayout(res=256, scl=1, spc=0.001953125, box=(0,1,0,1))
 
     # Set the user to UVmode
     cmds.selectMode(component=True)
