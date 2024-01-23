@@ -64,6 +64,9 @@ def auto_unwrap(*args):
         faces = '{}.f[0:{}]'.format(item, face_index)
         cmds.polyAutoProjection(faces)
 
+    # Orient shells
+    mm.eval("texOrientShells;")
+
     # Layout
     cmds.u3dLayout(res=256, scl=1, spc=0.001953125, box=(0,1,0,1))
 
@@ -215,6 +218,40 @@ def set_tileable_size(density,map_size):
     #Clean select edges
     clean_selection(objects,edges)
 
+def set_simple_tileable_size(density,map_size):
+    """
+    Deletes history and freezes transformations
+    Sets the selection to the specified texel density
+    Args:
+        density:
+        map_size:
+
+    Returns:
+
+    """
+    # Kill history and freeze numbers
+    cmds.DeleteHistory()
+    cmds.FreezeTransformations()
+
+    selected_items = cmds.ls(selection=True)
+
+    uv_maps = []
+    objects=get_objects(selected_items)
+
+    #Populate map list and edge directory
+    for item in objects:
+        map_index = cmds.polyEvaluate(item, uvcoord=True) - 1
+        uv_maps.append('{}.map[0:{}]'.format(item, map_index))
+
+    #clean selection
+    clean_selection(objects,uv_maps)
+
+    #Set texel density
+    mm.eval("texSetTexelDensity {} {};".format(density,map_size))
+
+    # Kill history and freeze numbers
+    cmds.DeleteHistory()
+    cmds.FreezeTransformations()
 
 def reset_tools(*args):
     """

@@ -15,6 +15,8 @@ EXTRA_PATH_TEXT_BOX_NAME_3='extra_path_text_box_3'
 EXTRA_PATH_TEXT_BOX_NAME_4='extra_path_text_box_4'
 EXTRA_PATH_TEXT_BOX_NAME_5='extra_path_text_box_5'
 EXTRA_PATH_TEXT_BOX_NAME_6='extra_path_text_box_6'
+EXTRA_PATH_TEXT_BOX_NAME_7='extra_path_text_box_7'
+EXTRA_PATH_TEXT_BOX_NAME_8='extra_path_text_box_8'
 DOCK_CONTROL_NAME='bake_tester_dock_control'
 
 #Save preferances settings
@@ -48,13 +50,16 @@ def show_ui():
     paths_dict=read_directory_from_file()
 
     # Create new window
-    cmds.window(WINDOW_NAME, title='Baking tools', widthHeight=(500,120))
+    cmds.window(WINDOW_NAME, title='Baking tools', widthHeight=(500,150))
 
     #Auto-Unwrap
     cmds.columnLayout(adjustableColumn=True, columnOffset=('both',10))
     cmds.columnLayout(adjustableColumn=True, backgroundColor=BLUE)
-    cmds.frameLayout('Baked', collapsable=True, collapse=True, backgroundColor=DARK_BLUE)
-    cmds.checkBox(CHECK_BOX_NAME,label="Auto-Unwrap Slot 1",annotation="auto-unwrap/unfold/unlock normals/soften-harden texture borders/kills history and numbers", highlightColor=DARK_BLUE)
+
+
+    #Colapsable menu 1
+    cmds.frameLayout('BAKED', collapsable=True, collapse=False, backgroundColor=DARK_BLUE, fn='boldLabelFont')
+    cmds.checkBox(CHECK_BOX_NAME,label="Auto-Unwrap Slot 1",annotation="auto-unwrap / unfold / unlock normals / conditions normals / kills history and numbers", highlightColor=DARK_BLUE)
 
     # Browse Low Export
     cmds.rowLayout(numberOfColumns=4,adjustableColumn=2)
@@ -80,11 +85,13 @@ def show_ui():
     cmds.setParent('..')
     cmds.setParent('..')
 
+    #Colapsable menu 2
     cmds.columnLayout(adjustableColumn=True, backgroundColor=GREEN)
-    cmds.frameLayout('Tiled',collapsable=True,collapse=True, backgroundColor=DARK_GREEN)
+    cmds.frameLayout('TILED',collapsable=True,collapse=True, backgroundColor=DARK_GREEN, fn='boldLabelFont')
+
     # Browse Extra Export 1
     cmds.rowLayout(numberOfColumns=4, adjustableColumn=2)
-    cmds.text(label='3 ')
+    cmds.text(label='1 ')
     if paths_dict.get(EXTRA_PATH_TEXT_BOX_NAME_1) is not None:
         cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_1, text=paths_dict[EXTRA_PATH_TEXT_BOX_NAME_1], backgroundColor=DARK_GREEN)
     else:
@@ -95,7 +102,7 @@ def show_ui():
 
     # Browse Extra Export 2
     cmds.rowLayout(numberOfColumns=4, adjustableColumn=2)
-    cmds.text(label='4 ')
+    cmds.text(label='2 ')
     if paths_dict.get(EXTRA_PATH_TEXT_BOX_NAME_2) is not None:
         cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_2, text=paths_dict[EXTRA_PATH_TEXT_BOX_NAME_2], backgroundColor=DARK_GREEN)
     else:
@@ -106,7 +113,7 @@ def show_ui():
 
     # Browse Extra Export 3
     cmds.rowLayout(numberOfColumns=4, adjustableColumn=2)
-    cmds.text(label='5 ')
+    cmds.text(label='3 ')
     if paths_dict.get(EXTRA_PATH_TEXT_BOX_NAME_3) is not None:
         cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_3, text=paths_dict[EXTRA_PATH_TEXT_BOX_NAME_3], backgroundColor=DARK_GREEN)
     else:
@@ -117,7 +124,7 @@ def show_ui():
 
     # Browse Extra Export 4
     cmds.rowLayout(numberOfColumns=4, adjustableColumn=2)
-    cmds.text(label='6 ')
+    cmds.text(label='4 ')
     if paths_dict.get(EXTRA_PATH_TEXT_BOX_NAME_4) is not None:
         cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_4, text=paths_dict[EXTRA_PATH_TEXT_BOX_NAME_4], backgroundColor=DARK_GREEN)
     else:
@@ -128,7 +135,7 @@ def show_ui():
 
     # Browse Extra Export 5
     cmds.rowLayout(numberOfColumns=4, adjustableColumn=2)
-    cmds.text(label='7 ')
+    cmds.text(label='5 ')
     if paths_dict.get(EXTRA_PATH_TEXT_BOX_NAME_5) is not None:
         cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_5, text=paths_dict[EXTRA_PATH_TEXT_BOX_NAME_5], backgroundColor=DARK_GREEN)
     else:
@@ -139,7 +146,7 @@ def show_ui():
 
     # Browse Extra Export 6
     cmds.rowLayout(numberOfColumns=4, adjustableColumn=2)
-    cmds.text(label='8 ')
+    cmds.text(label='6 ')
     if paths_dict.get(EXTRA_PATH_TEXT_BOX_NAME_6) is not None:
         cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_6, text=paths_dict[EXTRA_PATH_TEXT_BOX_NAME_6], backgroundColor=DARK_GREEN)
     else:
@@ -147,16 +154,40 @@ def show_ui():
     cmds.button(label='...', command=browse_extra_6, backgroundColor=LIGHT_GREEN)
     cmds.button(label='Export', command=extra_exportFBX6, backgroundColor=LIGHT_GREEN)
     cmds.setParent('..')
+
+    # Browse Extra Export 7
+    cmds.rowLayout(numberOfColumns=4, adjustableColumn=2)
+    cmds.text(label='7 ')
+    if paths_dict.get(EXTRA_PATH_TEXT_BOX_NAME_7) is not None:
+        cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_7, text=paths_dict[EXTRA_PATH_TEXT_BOX_NAME_7],
+                       backgroundColor=DARK_GREEN)
+    else:
+        cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_7, backgroundColor=DARK_GREEN)
+    cmds.button(label='...', command=browse_extra_7, backgroundColor=LIGHT_GREEN)
+    cmds.button(label='Export', command=extra_exportFBX7, backgroundColor=LIGHT_GREEN)
+    cmds.setParent('..')
+
+    # Browse Extra Export 8
+    cmds.rowLayout(numberOfColumns=4, adjustableColumn=2)
+    cmds.text(label='8 ')
+    if paths_dict.get(EXTRA_PATH_TEXT_BOX_NAME_8) is not None:
+        cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_8, text=paths_dict[EXTRA_PATH_TEXT_BOX_NAME_8],
+                       backgroundColor=DARK_GREEN)
+    else:
+        cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_8, backgroundColor=DARK_GREEN)
+    cmds.button(label='...', command=browse_extra_8, backgroundColor=LIGHT_GREEN)
+    cmds.button(label='Export', command=extra_exportFBX8, backgroundColor=LIGHT_GREEN)
+    cmds.setParent('..')
     cmds.setParent('..')
     cmds.setParent('..')
 
     #Credits
     cmds.rowLayout(numberOfColumns=2, adjustableColumn=2)
-    cmds.text(label='V 1.1.1')
+    cmds.text(label='V 1.1.2')
     cmds.text(label='GD67_JoseMunguia   ', align='right')
 
     cmds.setParent('..')
-    cmds.dockControl(DOCK_CONTROL_NAME,floating=True,label='Exporter',content=WINDOW_NAME,area='left',width=500,height=100,allowedArea=('top','bottom'))
+    cmds.dockControl(DOCK_CONTROL_NAME,floating=True,label='Exporter',content=WINDOW_NAME,area='left',width=500,height=150,allowedArea=('top','bottom'))
 
     # Show window
     cmds.showWindow()
@@ -193,6 +224,14 @@ def browse_extra_5(*args):
 def browse_extra_6(*args):
     """browses for high"""
     browse(EXTRA_PATH_TEXT_BOX_NAME_6)
+
+def browse_extra_7(*args):
+    """browses for high"""
+    browse(EXTRA_PATH_TEXT_BOX_NAME_7)
+
+def browse_extra_8(*args):
+    """browses for high"""
+    browse(EXTRA_PATH_TEXT_BOX_NAME_8)
 
 def browse(textbox):
     """
@@ -238,6 +277,14 @@ def extra_exportFBX5(*args):
 def extra_exportFBX6(*args):
     """Exports the selecton to the high poly path"""
     exportFBX(EXTRA_PATH_TEXT_BOX_NAME_6)
+
+def extra_exportFBX7(*args):
+    """Exports the selecton to the high poly path"""
+    exportFBX(EXTRA_PATH_TEXT_BOX_NAME_7)
+
+def extra_exportFBX8(*args):
+    """Exports the selecton to the high poly path"""
+    exportFBX(EXTRA_PATH_TEXT_BOX_NAME_8)
 
 def exportFBX(text_box):
     """
