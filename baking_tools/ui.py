@@ -59,7 +59,7 @@ def show_ui():
 
     #Colapsable menu 1
     cmds.frameLayout('BAKED', collapsable=True, collapse=False, backgroundColor=DARK_BLUE, fn='boldLabelFont')
-    cmds.checkBox(CHECK_BOX_NAME,label="Auto-Unwrap Slot 1",annotation="auto-unwrap / unfold / unlock normals / conditions normals / kills history and numbers", highlightColor=DARK_BLUE)
+    cmds.checkBox(CHECK_BOX_NAME,label="Auto-Unwrap Slot 1",annotation="auto-unwrap / unfold / kills history and numbers", highlightColor=DARK_BLUE)
 
     # Browse Low Export
     cmds.rowLayout(numberOfColumns=4,adjustableColumn=2)
@@ -69,7 +69,7 @@ def show_ui():
     else:
         cmds.textField(LOW_POLY_PATH_TEXT_BOX_NAME, backgroundColor=DARK_BLUE)
     cmds.button(label='...',command=browse_low, backgroundColor=LIGHT_BLUE)
-    cmds.button(label='Export LOW',command=low_exportFBX,width=73, backgroundColor=LIGHT_BLUE)
+    cmds.button(label='Export LOW',command=low_exportFBX,width=73, backgroundColor=LIGHT_BLUE, annotation='unlock normals / conditions normals')
     cmds.setParent('..')
 
     # Browse High Export
@@ -245,9 +245,10 @@ def browse(textbox):
 #Export buttons
 def low_exportFBX(*args):
     """Checks if auto unwrap is necesary and exports the selectction to the low poly path"""
+    selected_items = cmds.ls(sl=True)
     if cmds.checkBox(CHECK_BOX_NAME,query=True,value=True)==True:
-        baking_tools_core.auto_unwrap()
-    baking_tools_core.soft_texture_borders()
+        baking_tools_core.auto_unwrap(selected_items)
+    baking_tools_core.soft_texture_borders(selected_items)
     exportFBX(LOW_POLY_PATH_TEXT_BOX_NAME)
 
 def high_exportFBX(*args):

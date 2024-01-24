@@ -235,16 +235,7 @@ def set_simple_tileable_size(density,map_size):
 
     selected_items = cmds.ls(selection=True)
 
-    uv_maps = []
-    objects=get_objects(selected_items)
 
-    #Populate map list and edge directory
-    for item in objects:
-        map_index = cmds.polyEvaluate(item, uvcoord=True) - 1
-        uv_maps.append('{}.map[0:{}]'.format(item, map_index))
-
-    #clean selection
-    clean_selection(objects,uv_maps)
 
     #Set texel density
     mm.eval("texSetTexelDensity {} {};".format(density,map_size))
