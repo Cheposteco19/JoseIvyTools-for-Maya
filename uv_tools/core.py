@@ -68,7 +68,9 @@ def auto_unwrap(*args):
 
     #Is the selection a UV shell
     elif '.map' in selected_items[0]:
-        cmds.polyListComponentConversion(selected_items,fromUV=True,toFace=True)
+        new_selection=cmds.polyListComponentConversion(selected_items,fromUV=True,toFace=True)
+        clean_selection(objects,new_selection)
+        selected_items = cmds.ls(selection=True)
 
     #Is the selection different than a face
     elif '.f' not in selected_items[0]:
@@ -77,7 +79,10 @@ def auto_unwrap(*args):
         for item in objects:
             face_index = cmds.polyEvaluate(item, face=True) - 1
             faces = '{}.f[0:{}]'.format(item, face_index)
-            cmds.polyAutoProjection(faces)
+
+    #Auto projection faces
+    if '.f' in selected_items[0]:
+        cmds.polyAutoProjection(selected_items)
 
     # Orient shells
     mm.eval("texOrientShells;")
@@ -137,7 +142,6 @@ def unfold(*args):
 
     if cmds.selectType(query=True,edge=True):
         cmds.selectMode(object=True)
-        print('Hello')
 
     #Unfold
     cmds.u3dUnfold(ite=1, p=0, bi=1, tf=1, ms=1024, rs=2)
