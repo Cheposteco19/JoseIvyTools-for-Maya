@@ -58,8 +58,19 @@ def auto_unwrap(*args):
 
     objects = get_objects(selected_items)
 
+    if not selected_items:
+        if cmds.selectMode(query=True, component=True):
+            cmds.selectMode(object=True)
+            object = cmds.ls(selection=True)
+
+            # Populate all object faces
+            for item in object:
+                face_index = cmds.polyEvaluate(item, face=True) - 1
+                faces = '{}.f[0:{}]'.format(item, face_index)
+                cmds.polyAutoProjection(faces)
+
     #Prevent user from selecting a vertex or edge
-    if '.v' in selected_items[0]:
+    elif '.v' in selected_items[0]:
         cmds.warning('select faces or UVs')
         return
     elif '.e' in selected_items[0]:
@@ -79,6 +90,9 @@ def auto_unwrap(*args):
         for item in objects:
             face_index = cmds.polyEvaluate(item, face=True) - 1
             faces = '{}.f[0:{}]'.format(item, face_index)
+            cmds.polyAutoProjection(faces)
+
+
 
     #Auto projection faces
     if '.f' in selected_items[0]:
