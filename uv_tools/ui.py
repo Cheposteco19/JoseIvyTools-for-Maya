@@ -104,7 +104,7 @@ def show_ui():
 
     #Credits
     cmds.rowLayout(numberOfColumns=2,adjustableColumn=2)
-    cmds.text(label='V 1.1.2')
+    cmds.text(label='V 1.1.3')
     cmds.text(label='GD67_JoseMunguia   ', align='right')
 
     cmds.showWindow()
@@ -119,7 +119,7 @@ def texel_density_custom(*args):
     """Reads the user input for setting the new texel density for the selection"""
     density=cmds.floatField(CUSTOM_DENSITY_FLOATBOX_NAME, query=True, value=True)
     map_size=cmds.intField(CUSTOM_MAP_SIZE_INTBOX_NAME, query=True, value=True)
-    uv_tools_core.set_simple_tileable_size(density, map_size)
+    uv_tools_core.set_tileable_size(density, map_size)
 
 def straighten_uvs(*args):
     """Reads the user input for straighten the UVs for the selection"""

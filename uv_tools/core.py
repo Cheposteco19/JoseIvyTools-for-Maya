@@ -58,11 +58,26 @@ def auto_unwrap(*args):
 
     objects = get_objects(selected_items)
 
-    #Populate faces
-    for item in objects:
-        face_index = cmds.polyEvaluate(item, face=True) - 1
-        faces = '{}.f[0:{}]'.format(item, face_index)
-        cmds.polyAutoProjection(faces)
+    #Prevent user from selecting a vertex or edge
+    if '.v' in selected_items[0]:
+        cmds.warning('select faces or UVs')
+        return
+    elif '.e' in selected_items[0]:
+        cmds.warning('select faces or UVs')
+        return
+
+    #Is the selection a UV shell
+    elif '.map' in selected_items[0]:
+        cmds.polyListComponentConversion(selected_items,fromUV=True,toFace=True)
+
+    #Is the selection different than a face
+    elif '.f' not in selected_items[0]:
+
+        #Populate all object faces
+        for item in objects:
+            face_index = cmds.polyEvaluate(item, face=True) - 1
+            faces = '{}.f[0:{}]'.format(item, face_index)
+            cmds.polyAutoProjection(faces)
 
     # Orient shells
     mm.eval("texOrientShells;")
@@ -71,7 +86,7 @@ def auto_unwrap(*args):
     cmds.u3dLayout(res=256, scl=1, spc=0.001953125, box=(0,1,0,1))
 
     #Select objects again
-    select_objects(objects)
+    clean_selection(objects,selected_items)
 
 def camera_based(*args):
     """
@@ -114,23 +129,23 @@ def unfold(*args):
     Returns:
 
     """
+    #Check if select tool is anable
+    #is_select_tool_enabled=cmds.toolButton('selectTool2',query=True,enable=True)
+
     #Set the select tool
     cmds.SelectTool()
 
     #Get object from past selection
-    cmds.selectMode(object=True)
-    selected_items = cmds.ls(selection=True)
 
-    uv_maps = []
-    objects = get_objects(selected_items)
+    if not cmds.selectMode(query=True,component=True):
+        cmds.selectMode(object=True)
+    #selected_items = cmds.ls(selection=True)
 
-    for item in objects:
-        map_index = cmds.polyEvaluate(item, uvcoord=True) - 1
-        uv_maps.append('{}.map[0:{}]'.format(item, map_index))
+    #print(selected_items)
 
     #Unfold
-    for item in selected_items:
-        cmds.u3dUnfold(item,ite=1, p=0, bi=1, tf=1, ms=1024, rs=2)
+    #for item in selected_items:
+    cmds.u3dUnfold(ite=1, p=0, bi=1, tf=1, ms=1024, rs=2)
 
     #Orient Shells
     mm.eval("texOrientShells;")
@@ -138,11 +153,9 @@ def unfold(*args):
     #Layout
     cmds.u3dLayout(res=256, scl=1, spc=0.001953125, box=(0,1,0,1))
 
-    # Set the user to UVmode
+    #Set the user to UVmode
     cmds.selectMode(component=True)
     cmds.selectType(polymeshUV=True)
-
-    clean_selection(objects,uv_maps)
 
 def set_cut_sew_tool(*args):
     """
@@ -167,22 +180,40 @@ def set_tileable_size(density,map_size):
     Returns:
 
     """
+    selected_items = cmds.ls(selection=True)
+
+    # Prevent user from selecting a vertex or edge
+    if '.v' in selected_items[0]:
+        cmds.warning('select objects, faces or UVs')
+        return
+    elif '.e' in selected_items[0]:
+        cmds.warning('select objects, faces or UVs')
+        return
+
     # Kill history and freeze numbers
     cmds.DeleteHistory()
     cmds.FreezeTransformations()
-
-    selected_items = cmds.ls(selection=True)
 
     uv_maps = []
     objects=get_objects(selected_items)
     edges=[]
     edge_index={}
 
+    if '.f' in selected_items[0]:
+        new_selection=cmds.polyListComponentConversion(selected_items,fromFace=True,toUV=True)
+        clean_selection(objects,new_selection)
+        selected_items = cmds.ls(selection=True)
+
+    print(selected_items)
+
     #Populate map list and edge directory
-    for item in objects:
-        map_index = cmds.polyEvaluate(item, uvcoord=True) - 1
-        edge_index[item]=cmds.polyEvaluate(item, edge=True)
-        uv_maps.append('{}.map[0:{}]'.format(item, map_index))
+    if '.map' not in selected_items[0]:
+        for item in objects:
+            map_index = cmds.polyEvaluate(item, uvcoord=True) - 1
+            edge_index[item]=cmds.polyEvaluate(item, edge=True)
+            uv_maps.append('{}.map[0:{}]'.format(item, map_index))
+    else:
+        uv_maps=selected_items
 
     #clean selection
     clean_selection(objects,uv_maps)
@@ -204,45 +235,19 @@ def set_tileable_size(density,map_size):
     cmds.selectMode(component=True)
     cmds.selectType(edge=True)
 
-    #Get border edges
-    for object in edge_index:
-        for edge in range(edge_index[object]):
-            name='{}.e[{}]'.format(object,edge)
+    if '.map' not in selected_items[0]:
 
-            edges.append(name)
+        #Get edges
+        for object in edge_index:
+            for edge in range(edge_index[object]):
+                name='{}.e[{}]'.format(object,edge)
+                edges.append(name)
 
-    # Kill history and freeze numbers
-    cmds.DeleteHistory()
-    cmds.FreezeTransformations()
+        #Clean select edges
+        clean_selection(objects,edges)
 
-    #Clean select edges
-    clean_selection(objects,edges)
-
-def set_simple_tileable_size(density,map_size):
-    """
-    Deletes history and freezes transformations
-    Sets the selection to the specified texel density
-    Args:
-        density:
-        map_size:
-
-    Returns:
-
-    """
-    # Kill history and freeze numbers
-    cmds.DeleteHistory()
-    cmds.FreezeTransformations()
-
-    selected_items = cmds.ls(selection=True)
-
-
-
-    #Set texel density
-    mm.eval("texSetTexelDensity {} {};".format(density,map_size))
-
-    # Kill history and freeze numbers
-    cmds.DeleteHistory()
-    cmds.FreezeTransformations()
+    else:
+        clean_selection(objects, selected_items)
 
 def reset_tools(*args):
     """

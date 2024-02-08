@@ -6,7 +6,6 @@ def auto_unwrap(selected_items):
     Auto unwraps, unfolds, unlocks normals and set to face normals, soften/harden faces along texture borders
     Deletes history and freezes transformations
     """
-    #selected_items = cmds.ls(sl=True)
 
     for item in selected_items:
         cmds.polyAutoProjection(item)
@@ -19,7 +18,6 @@ def auto_unwrap(selected_items):
 
 def soft_texture_borders(selected_items):
 
-    #selected_items = cmds.ls(sl=True)
 
     for item in selected_items:
         cmds.UnlockNormals()
