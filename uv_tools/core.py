@@ -129,22 +129,17 @@ def unfold(*args):
     Returns:
 
     """
-    #Check if select tool is anable
-    #is_select_tool_enabled=cmds.toolButton('selectTool2',query=True,enable=True)
 
     #Set the select tool
     cmds.SelectTool()
 
     #Get object from past selection
 
-    if not cmds.selectMode(query=True,component=True):
+    if cmds.selectType(query=True,edge=True):
         cmds.selectMode(object=True)
-    #selected_items = cmds.ls(selection=True)
-
-    #print(selected_items)
+        print('Hello')
 
     #Unfold
-    #for item in selected_items:
     cmds.u3dUnfold(ite=1, p=0, bi=1, tf=1, ms=1024, rs=2)
 
     #Orient Shells
