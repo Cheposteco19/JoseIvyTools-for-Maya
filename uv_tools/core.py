@@ -300,3 +300,25 @@ def dont_preserve_uvs(*args):
 
     """
     mm.eval('setTRSPreserveUVs false;')
+
+def wireframe_on(*args):
+    """
+    Sets the wireframe view on
+    Args:
+        *args:
+
+    Returns:
+
+    """
+    mm.eval('modelEditor -e -sel true modelPanel4;')
+
+def wireframe_off(*args):
+    """
+    Sets the wireframe view off
+    Args:
+        *args:
+
+    Returns:
+
+    """
+    mm.eval('modelEditor -e -sel false modelPanel4;')

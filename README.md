@@ -1,4 +1,4 @@
-# JoseTools-for-Maya V 1.1.3
+# JoseTools-for-Maya V 1.1.4
 
 This shelf of tools will help you to quickly iterate in you high to low resolution baking and UV editing processes in Maya.
 

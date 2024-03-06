@@ -20,6 +20,7 @@ CUSTOM_MAP_SIZE_INTBOX_NAME= 'custom_map_size_value'
 RESET_MOVE_TOOL_BUTTON_NAME='reset_move_tool_button'
 PRESERVE_UVS_CHECKBOX_NAME='preserve_UVs_checkbox'
 GET_TEXEL_DENSITY_BUTTON_NAME='get_texel_density_button'
+WIREFRAME_CHECKBOX_NAME='wireframe_checkbox'
 
 #Colors
 TITLE_GREEN=(.5,.7,.5)
@@ -40,7 +41,7 @@ def show_ui():
     if cmds.window(WINDOW_NAME,query=True,exists=True):
         cmds.deleteUI(WINDOW_NAME)
 
-    cmds.window(WINDOW_NAME, title='UV tools', widthHeight=(291,212))
+    cmds.window(WINDOW_NAME, title='UV tools', widthHeight=(291,218))
 
     #Baked column
     cmds.columnLayout(adjustableColumn=True)
@@ -53,13 +54,13 @@ def show_ui():
 
     #Gridify
     cmds.text(label='GRIDIFY',font='boldLabelFont', backgroundColor=DARK_BLUE)
-    cmds.button(STRAIGTEN_UVS_BUTTON_NAME, label='Straighten\nUVs', backgroundColor=LIGHT_BLUE, command=straighten_uvs)
+    cmds.button(STRAIGTEN_UVS_BUTTON_NAME, label='Straighten\nUVs', backgroundColor=LIGHT_BLUE, command=straighten_uvs, height=44)
     cmds.rowLayout(numberOfColumns=3)
     cmds.floatField(STRAIGHTEN_UVS_VALUE_NAME, value=35, precision=2, backgroundColor=DARK_BLUE, width=35)
     cmds.checkBox(STRAIGTEN_U_CHECKBOX_NAME, label='U', highlightColor=DARK_BLUE, value=True, width=35)
     cmds.checkBox(STRAIGTEN_V_CHECKBOX_NAME, label='V', highlightColor=DARK_BLUE, value=True)
     cmds.setParent('..')
-    cmds.button(STRAIGTEN_SHELL_BUTTON_NAME, label='Straighten\nShell', backgroundColor=LIGHT_BLUE, command=straighten_shell)
+    cmds.button(STRAIGTEN_SHELL_BUTTON_NAME, label='Straighten\nShell', backgroundColor=LIGHT_BLUE, command=straighten_shell, height=34)
     cmds.setParent('..')
 
     #Tiled column
@@ -80,11 +81,11 @@ def show_ui():
     cmds.columnLayout(adjustableColumn=True)
 
     cmds.button(GET_TEXEL_DENSITY_BUTTON_NAME,label='Get',command=get_texel_density, backgroundColor=LIGHT_GREEN)
-    cmds.text(label='Texel density\n(px/inch)')
+    cmds.text(label='Texel density\n(px/inch)', height=27)
     cmds.floatField(CUSTOM_DENSITY_FLOATBOX_NAME, value=10.24, precision=2, backgroundColor=DARK_GREEN)
 
 
-    cmds.button(RESET_MOVE_TOOL_BUTTON_NAME, label='Reset Tools', command=uv_tools_core.reset_tools,annotation='reset move / rotate / scale tools', backgroundColor=LIGHT_GREEN)
+    cmds.button(RESET_MOVE_TOOL_BUTTON_NAME, label='Reset\nTools', command=uv_tools_core.reset_tools,annotation='reset move / rotate / scale tools', backgroundColor=LIGHT_GREEN, height=34)
     cmds.setParent('..')
 
     #Density second column
@@ -94,17 +95,17 @@ def show_ui():
     cmds.text(label='Map size', height=27)
     cmds.intField(CUSTOM_MAP_SIZE_INTBOX_NAME, value=4096, backgroundColor=DARK_GREEN)
 
-    cmds.checkBox(PRESERVE_UVS_CHECKBOX_NAME, label="preserve UVs", onCommand=uv_tools_core.preserve_uvs, offCommand=uv_tools_core.dont_preserve_uvs, height=22, highlightColor=DARK_GREEN)
+    cmds.checkBox(PRESERVE_UVS_CHECKBOX_NAME, label="preserve UVs", onCommand=uv_tools_core.preserve_uvs, offCommand=uv_tools_core.dont_preserve_uvs, highlightColor=DARK_GREEN)
+    cmds.checkBox(WIREFRAME_CHECKBOX_NAME, label="wireframe", onCommand=uv_tools_core.wireframe_on, offCommand=uv_tools_core.wireframe_off, highlightColor=DARK_GREEN, value=True)
     cmds.setParent('..')
     cmds.setParent('..')
-    cmds.separator(height=6)
     cmds.setParent('..')
     cmds.setParent('..')
     cmds.setParent('..')
 
     #Credits
     cmds.rowLayout(numberOfColumns=2,adjustableColumn=2)
-    cmds.text(label='V 1.1.3')
+    cmds.text(label='V 1.1.4')
     cmds.text(label='GD67_JoseMunguia   ', align='right')
 
     cmds.showWindow()
