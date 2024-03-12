@@ -183,7 +183,7 @@ def show_ui():
 
     #Credits
     cmds.rowLayout(numberOfColumns=2, adjustableColumn=2)
-    cmds.text(label='V 1.1.4')
+    cmds.text(label='V 1.1.5')
     cmds.text(label='GD67_JoseMunguia   ', align='right')
 
     cmds.setParent('..')

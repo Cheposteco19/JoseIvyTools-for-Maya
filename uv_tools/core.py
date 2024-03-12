@@ -2,6 +2,26 @@ from maya import cmds
 import maya.mel as mm
 from uv_tools import ui as uv_tools_ui
 
+def center_pivot(*args):
+    cmds.CenterPivot()
+def delete_history(*args):
+    cmds.DeleteHistory()
+
+def freeze_transformations(*args):
+    cmds.FreezeTransformations()
+
+def stack_shells(*args):
+    mm.eval("texStackShells {};")
+
+def combine(*args):
+    cmds.CombinePolygons()
+
+def separate(*args):
+    cmds.SeparatePolygon()
+
+def randomize_shells(*args):
+    mm.eval("texRandomizeShells 1 1 1 0 0 1 0 0 1;")
+
 def select_objects(objects):
     """
     Goes to object mode and selects the objects

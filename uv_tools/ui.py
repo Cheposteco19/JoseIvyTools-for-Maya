@@ -41,10 +41,20 @@ def show_ui():
     if cmds.window(WINDOW_NAME,query=True,exists=True):
         cmds.deleteUI(WINDOW_NAME)
 
-    cmds.window(WINDOW_NAME, title='UV tools', widthHeight=(291,218))
+    cmds.window(WINDOW_NAME, title='UV tools', widthHeight=(291,255))
+
+    cmds.columnLayout(adjustableColumn=True)
+    cmds.rowLayout(numberOfColumns=7)
+    cmds.shelfButton(command=uv_tools_core.center_pivot, image="CenterPivot.png", annotation="Resets the selected object's pivot to center")
+    cmds.shelfButton(command=uv_tools_core.delete_history, image="DeleteHistory.png", annotation="Delete construction history on the selected object(s)")
+    cmds.shelfButton(command=uv_tools_core.freeze_transformations, image="FreezeTransform.png", annotation="Freeze transformations of the selected object(s)")
+    cmds.shelfButton(command=uv_tools_core.combine, image="polyUnite.png", annotation="Combine the selected polygon objects into one single object")
+    cmds.shelfButton(command=uv_tools_core.separate, image="polySeparate.png", annotation="Combine the selected polygon objects into one single object")
+    cmds.shelfButton(command=uv_tools_core.stack_shells, image="polyStackShell.png", annotation="Stack selected UV shells on top of each other")
+    cmds.shelfButton(command=uv_tools_core.randomize_shells, image="polyRandomizeShell.png", annotation="Randomize UV shells translation")
+    cmds.setParent('..')
 
     #Baked column
-    cmds.columnLayout(adjustableColumn=True)
     cmds.rowLayout(numberOfColumns=2)
     cmds.columnLayout(adjustableColumn=True, backgroundColor=BLUE)
     cmds.text(label='BAKED',font='boldLabelFont', backgroundColor=TITLE_BLUE)
@@ -105,7 +115,7 @@ def show_ui():
 
     #Credits
     cmds.rowLayout(numberOfColumns=2,adjustableColumn=2)
-    cmds.text(label='V 1.1.4')
+    cmds.text(label='V 1.1.5')
     cmds.text(label='GD67_JoseMunguia   ', align='right')
 
     cmds.showWindow()
