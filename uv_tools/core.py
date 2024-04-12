@@ -14,10 +14,46 @@ def stack_shells(*args):
     mm.eval("texStackShells {};")
 
 def combine(*args):
-    cmds.CombinePolygons()
+    selected_items = cmds.ls(selection=True)
+    parent=cmds.listRelatives(selected_items[0],parent=True)
+    extensionless_names = []
+    if '_' in selected_items[0]:
+        substrings=selected_items[0].split('_')
+        last_substring=substrings[-1]
+        for item in selected_items:
+            result='_'.join(item.split('_')[:-1])
+            extensionless_names.append(result)
+        extensionless_names.append(last_substring)
+        selected_items=extensionless_names
+    combination_name="_".join(selected_items)
+    cmds.polyUnite(name=combination_name)
+    cmds.parent(combination_name,parent,relative=True)
+    center_pivot()
+    delete_history()
+    freeze_transformations()
 
 def separate(*args):
-    cmds.SeparatePolygon()
+    selected_items = cmds.ls(selection=True)
+    for item in selected_items:
+        combination_name=item
+        separated_names=combination_name.split("_")
+        separated_nodes=cmds.polySeparate(n=combination_name)
+        separated_nodes=separated_nodes[:-1]
+        for index, node in enumerate(separated_nodes):
+            if len(separated_nodes) < len(separated_names):
+                extension=separated_names[-1]
+                extension='_'+extension
+                separated_names[index]+=extension
+            cmds.rename(node,separated_names[index])
+            parent_group=cmds.listRelatives(separated_names[index], parent=True)
+            parent=cmds.listRelatives(parent_group, parent=True)
+            cmds.parent(separated_names[index],parent,relative=True)
+        if len(separated_nodes) < len(separated_names):
+            separated_names=separated_names[:-1]
+        cmds.select(separated_names,replace=True)
+        center_pivot()
+        delete_history()
+        freeze_transformations()
 
 def randomize_shells(*args):
     mm.eval("texRandomizeShells 1 1 1 0 0 1 0 0 1;")
