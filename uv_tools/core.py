@@ -28,6 +28,7 @@ def combine(*args):
     combination_name="_".join(selected_items)
     cmds.polyUnite(name=combination_name)
     cmds.parent(combination_name,parent,relative=True)
+    cmds.select(combination_name, replace=True)
     center_pivot()
     delete_history()
     freeze_transformations()
@@ -47,6 +48,10 @@ def separate(*args):
             cmds.rename(node,separated_names[index])
             parent_group=cmds.listRelatives(separated_names[index], parent=True)
             parent=cmds.listRelatives(parent_group, parent=True)
+            print('separated_node={}'.format(node))
+            print('separated_name={}'.format(separated_names[index]))
+            print('parent_group={}'.format(parent_group))
+            print('parent={}'.format(parent))
             cmds.parent(separated_names[index],parent,relative=True)
         if len(separated_nodes) < len(separated_names):
             separated_names=separated_names[:-1]
