@@ -193,7 +193,7 @@ class export_tool_window(object):
 
         # Delete old window
         if not cmds.workspaceControl(BAKE_WINDOW_NAME, exists=True):
-            cmds.workspaceControl(BAKE_WINDOW_NAME, floating=True, label='Exporter', uiScript='export_tool_window().create_ui()', width=500, height=150, retain=True)
+            cmds.workspaceControl(BAKE_WINDOW_NAME, floating=True, label='Exporter', uiScript='export_tool_window().create_ui()', width=500, height=150, retain=False)
 
         cmds.workspaceControl(BAKE_WINDOW_NAME, edit=True, restore=True)
         cmds.workspaceControl(BAKE_WINDOW_NAME, edit=True, visible=True)
