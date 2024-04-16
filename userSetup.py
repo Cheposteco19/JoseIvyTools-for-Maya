@@ -40,6 +40,11 @@ LIGHT_BLUE=(.2,.2,.4)
 BLUE=(.2,.2,.3)
 DARK_BLUE=(.1,.1,.2)
 
+if cmds.workspaceControl(BAKE_WINDOW_NAME, exists=True):
+    cmds.deleteUI(BAKE_WINDOW_NAME)
+if cmds.workspaceControl(UV_TOOLOS_WINDOW_NAME, exists=True):
+    cmds.deleteUI(UV_TOOLOS_WINDOW_NAME)
+
 class export_tool_window(object):
 
     def __init__(self):
