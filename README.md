@@ -1,4 +1,4 @@
-# JoseTools-for-Maya V 1.2.0
+# JoseIvyTools-for-Maya V 1.3.0
 
 This shelf of tools will help you to quickly iterate in you high to low resolution baking and UV editing processes in Maya.
 
@@ -15,4 +15,4 @@ If the installer doesn't work:
 1. Open Maya (if Maya is allready open, close it and then open it again).
 1. The shelf with the tools loaded will be there ready to be used.
 
-Created by: Jose Munguia
+Created by: Jose Munguia and Ivy Medina
