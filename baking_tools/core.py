@@ -7,8 +7,15 @@ def auto_unwrap(selected_items):
     Deletes history and freezes transformations
     """
 
+    if not selected_items:
+        cmds.warning("No items selected for auto unwrap.")
+        return
+
     for item in selected_items:
-        cmds.polyAutoProjection(item)
+        if cmds.objExists(item):
+            cmds.polyAutoProjection(item)
+        else:
+            cmds.warning(f"Item {item} does not exist.")
 
     # Orient Shells
     mm.eval("texOrientShells;")
@@ -18,10 +25,16 @@ def auto_unwrap(selected_items):
 
 def soft_texture_borders(selected_items):
 
+    if not selected_items:
+        cmds.warning("No items selected for softening texture borders.")
+        return
 
     for item in selected_items:
-        cmds.UnlockNormals()
-        cmds.polySetToFaceNormal(item)
-        mm.eval('polyUVBorderHard;')
-        cmds.DeleteHistory(item)
-        cmds.FreezeTransformations()
+        if cmds.objExists(item):
+            cmds.UnlockNormals()
+            cmds.polySetToFaceNormal(item)
+            mm.eval('polyUVBorderHard;')
+            cmds.DeleteHistory(item)
+            cmds.FreezeTransformations()
+        else:
+            cmds.warning(f"Item {item} does not exist.")

@@ -115,6 +115,10 @@ def auto_unwrap(*args):
     Returns:
 
     """
+    delete_history()
+
+    freeze_transformations()
+
     selected_items=cmds.ls(selection=True)
 
     objects = get_objects(selected_items)
