@@ -112,6 +112,10 @@ def read_directory_from_file():
             directory_dict = json.load(f)
     except IOError:
         cmds.warning(f"Failed to read directory history from {file_path}")
+
+    for layer in BROWSE_BUTTON_NAME_DICT.keys():
+        if layer not in directory_dict:
+            directory_dict[layer] = ''
         
     return directory_dict
 
@@ -163,14 +167,19 @@ def create_display_layer_ui():
 
     BROWSE_BUTTON_NAME_DICT.clear()
 
-    paths_dict = read_directory_from_file()
-
     workspace_ctrl = cmds.workspaceControl("displayLayerWorkspaceControl", label="Display Layer Editor")
     cmds.columnLayout(adjustableColumn=True)
 
     cmds.text(label="Display Layers", align='left', height=20)
 
     layer_list = cmds.ls(type="displayLayer")
+
+    for layer in layer_list:
+        BROWSE_BUTTON_NAME_DICT[layer]='{}_browse_button'.format(layer)
+
+    paths_dict = read_directory_from_file()
+
+    print(paths_dict)
     
     for layer in layer_list:
         if layer == "defaultLayer":
@@ -218,7 +227,6 @@ def create_display_layer_ui():
         cmds.colorSliderGrp(color_field, edit=True, changeCommand=lambda *args, l=layer, cf=color_field: set_layer_color(l, cf))
         
         # Browse button
-        BROWSE_BUTTON_NAME_DICT[layer]='{}_browse_button'.format(layer)
         cmds.button(BROWSE_BUTTON_NAME_DICT[layer], label="...", width=50, command=lambda *args, b=BROWSE_BUTTON_NAME_DICT[layer]: browse(b), annotation=paths_dict[layer])
         
         # Export Button
