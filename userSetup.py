@@ -305,7 +305,7 @@ class uv_tool_window(object):
 
         # Credits
         cmds.rowLayout(numberOfColumns=2, adjustableColumn=2)
-        cmds.text(label='V 1.2.0')
+        cmds.text(label='V 1.3.0')
         cmds.text(label='GD67_JoseMunguia   ', align='right')
 
     def show_ui(self):
