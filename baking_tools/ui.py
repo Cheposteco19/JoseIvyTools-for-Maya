@@ -4,14 +4,6 @@ import maya.mel as mm
 import pickle
 import os
 
-WORKSPACE_CONTROL_STATE_NAME='{}_workspace_control_state'.format(os.path.basename(cmds.file(query=True, sceneName=True)) or "untitled")
-WORKSPACE_CONTROL_STATE_ROOT_DIR = '{}/{}/prefs'.format(mm.eval('getenv "MAYA_APP_DIR";'), cmds.about(version=True))
-WORKSPACE_CONTROL_STATE_EXT= 'pck'
-
-WORKSPACE_CONTROL_STATE_PATH='{}/{}.{}'.format(WORKSPACE_CONTROL_STATE_ROOT_DIR,WORKSPACE_CONTROL_STATE_NAME,WORKSPACE_CONTROL_STATE_EXT)
-
-
-
 #Window components names
 DISPLAY_LAYER_WORKSPACE_CONTROL_NAME= 'displayLayerWorkspaceControl'
 AUTOUNWRAP_CHECK_BOX_NAME= 'auto_unwrap_check_box'
