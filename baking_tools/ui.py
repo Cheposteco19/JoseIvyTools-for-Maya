@@ -11,7 +11,8 @@ BROWSE_BUTTON_NAME_DICT={}
 
 #Save preferances settings
 
-DIRECTORY_HISTORY_NAME='{}_directory_history'.format(os.path.basename(cmds.file(query=True, sceneName=True)) or "untitled")
+SCENE_NAME_AND_PATH=cmds.file(query=True, expandName=True)
+DIRECTORY_HISTORY_NAME='{}_directory_history'.format(os.path.basename(SCENE_NAME_AND_PATH))
 DIRECTORY_HISTORY_ROOT_DIR = '{}/{}/prefs'.format(mm.eval('getenv "MAYA_APP_DIR";'), cmds.about(version=True))
 DIRECTORY_HISTORY_EXT= 'pck'
 
@@ -33,6 +34,7 @@ def browse(browseButton):
     """
     path = cmds.fileDialog2(dialogStyle=2, fileMode=3, okCaption="Select Folder")
     cmds.button(browseButton, edit=True, annotation=path[0])
+    save_paths_to_file()
 
 #Export defined
 
@@ -164,9 +166,11 @@ def set_layer_color(layer, color_field=None):
 
 def get_layer_color(layer):
     if cmds.attributeQuery("overrideColorRGB", node=layer, exists=True):
+        if cmds.getAttr(layer + ".overrideColorRGB")[0] == (0, 0, 0):
+            return [0.5, 0.5, 0.5]
         return cmds.getAttr(layer + ".overrideColorRGB")[0]
     else:
-        return [0, 0, 0]  # Default color if not set
+        return [0.5, 0.5, 0.5]  # Default color if not set
 
 def add_layer(*args):
     selected_objects = cmds.ls(selection=True)
@@ -198,6 +202,15 @@ def add_objects_to_layer(layer):
     if selected_objects:
         cmds.editDisplayLayerMembers(layer, selected_objects)
         update_display_layer_ui()
+
+def remove_objects_from_layer(layer):
+    selected_objects = cmds.ls(selection=True)
+    if selected_objects:
+        for object in selected_objects:
+            if object not in cmds.editDisplayLayerMembers(layer, query=True):
+                continue
+            cmds.editDisplayLayerMembers('defaultLayer', object)
+    update_display_layer_ui()
 
 def create_display_layer_ui():
     if cmds.workspaceControl(DISPLAY_LAYER_WORKSPACE_CONTROL_NAME, exists=True):
@@ -259,10 +272,15 @@ def create_display_layer_ui():
         # Color Picker
         if cmds.attributeQuery("overrideColorRGB", node=layer, exists=True):
             color = cmds.getAttr(layer + ".overrideColorRGB")[0]
+            if color == (0.0, 0.0, 0.0):
+                color = [.5, .5, .5]
         else:
-            color = [0, 0, 0]  # Default color if not set
+            color = [0.5, 0.5, 0.5]  # Default color if not set
 
-        color_field = cmds.colorSliderGrp(label="Color", rgb=(color[0], color[1], color[2]), width=100)
+        if color:
+            color_field = cmds.colorSliderGrp(label="Color", rgb=(color[0], color[1], color[2]), width=100)
+        else:
+            color_field = cmds.colorSliderGrp(label="Color", width=100)
         cmds.colorSliderGrp(color_field, edit=True, changeCommand=lambda *args, l=layer, cf=color_field: set_layer_color(l, cf))    
 
         # Browse button
@@ -275,6 +293,7 @@ def create_display_layer_ui():
         cmds.popupMenu(parent=text_field)
         cmds.menuItem(label="Delete Layer", command=lambda *args, l=layer: delete_layer(l))
         cmds.menuItem(label="Add Selected Objects", command=lambda *args, l=layer: add_objects_to_layer(l))
+        cmds.menuItem(label="Remove Selected Objects", command=lambda *args, l=layer: remove_objects_from_layer(l))
         
         cmds.setParent('..')  # End rowLayout
     
