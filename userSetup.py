@@ -3,6 +3,7 @@ from uv_tools import core as uv_tools_core
 from uv_tools import ui as uv_tools_ui
 from baking_tools import ui as baking_tools_ui
 
+
 #UV window component names
 UV_TOOLOS_WINDOW_NAME= 'uv_editing_tool_ui'
 STRAIGHTEN_UVS_VALUE_NAME='straighten_uvs_value'
@@ -317,3 +318,33 @@ class uv_tool_window(object):
         cmds.workspaceControl(UV_TOOLOS_WINDOW_NAME, edit=True, restore=True)
         cmds.workspaceControl(UV_TOOLOS_WINDOW_NAME, edit=True, visible=True)
 
+#Layer editor
+
+def load_layer_editor():
+    if not cmds.workspaceControl(baking_tools_ui.DISPLAY_LAYER_WORKSPACE_CONTROL_NAME, exists=True):
+        baking_tools_ui.create_display_layer_ui()
+
+    cmds.workspaceControl(baking_tools_ui.DISPLAY_LAYER_WORKSPACE_CONTROL_NAME, edit=True, restore=True)
+    cmds.workspaceControl(baking_tools_ui.DISPLAY_LAYER_WORKSPACE_CONTROL_NAME, edit=True, visible=True)
+
+def on_scene_change():
+    if not cmds.workspaceControl(baking_tools_ui.DISPLAY_LAYER_WORKSPACE_CONTROL_NAME, exists=True):
+        return
+    baking_tools_ui.update_display_layer_ui()
+
+
+def create_script_jobs():
+    # Trigger update when a new scene is created
+    cmds.scriptJob(event=["NewSceneOpened", on_scene_change], protected=True)
+
+    # Trigger update when an existing scene is opened
+    cmds.scriptJob(event=["SceneOpened", on_scene_change], protected=True)
+
+    # Trigger update when a scene is saved or changes are made
+    cmds.scriptJob(event=["SceneSaved", on_scene_change], protected=True)
+    cmds.scriptJob(event=["SceneChanged", on_scene_change], protected=True)
+
+
+# Initialize UI and script jobs on startup
+load_layer_editor()
+create_script_jobs()
