@@ -38,3 +38,12 @@ def soft_texture_borders(selected_items):
             cmds.FreezeTransformations()
         else:
             cmds.warning(f"Item {item} does not exist.")
+
+def ucx_process(static_mesh):
+    group='{}_grp'.format(static_mesh)
+    static_mesh='SM_{}'.format(static_mesh)
+    ucx='UCX_{}'.format(static_mesh)
+    cmds.rename(static_mesh)
+    cmds.duplicate(static_mesh,name=ucx)
+    cmds.group(static_mesh,ucx,n=group)
+    return static_mesh

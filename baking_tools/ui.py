@@ -54,7 +54,6 @@ def exportFBX(layer):
     #        baking_tools_core.auto_unwrap(selected_items)
     #    baking_tools_core.soft_texture_borders(selected_items)
     paths_dict = save_paths_to_file()
-    print(paths_dict)
     if all(value == '' for value in paths_dict.values()):
         cmds.warning(("Please browse and select a folder to export the layer to"))
         return
@@ -143,13 +142,13 @@ def toggle_display_type(layer, checkbox):
     elif new_state == 2:
         cmds.checkBox(checkbox, edit=True, label="R", value=True)
 
-def set_layer_color(layer):
+"""def set_layer_color(layer):
     color = cmds.colorEditor()
     if cmds.colorEditor(query=True, result=True):
         rgb = cmds.colorEditor(query=True, rgb=True)
         cmds.setAttr(layer + ".overrideColorRGB", rgb[0], rgb[1], rgb[2])
         cmds.setAttr(layer + ".overrideRGBColors", 1)
-        update_display_layer_ui()
+        update_display_layer_ui()"""
 
 def set_layer_color(layer, color_field=None):
     if color_field:
@@ -174,9 +173,70 @@ def get_layer_color(layer):
 
 def add_layer(*args):
     selected_objects = cmds.ls(selection=True)
-    new_layer = cmds.createDisplayLayer(name="NewLayer", empty=True)
-    if selected_objects:
+
+    if not selected_objects:
+        cmds.warning("No objects selected. Please select at least one object to create a layer.")
+        return
+
+    if len(selected_objects) == 1:
+        obj_name = selected_objects[0]
+
+        if cmds.nodeType(obj_name) == 'transform':
+            renamed_mesh = baking_tools_core.ucx_process(obj_name)
+            print("Renamed Mesh:", renamed_mesh)
+
+            # The UCX object is named 'UCX_SM_<original_name>'
+            ucx_name = f"UCX_{renamed_mesh}"
+            print("UCX Object Name:", ucx_name)
+
+            # Check if the material 'UCX_M' already exists
+            if not cmds.objExists('UCX_M'):
+                print("Creating new material 'UCX_M'")
+                ucx_material = cmds.shadingNode('lambert', asShader=True, name='UCX_M')
+                shading_group = cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name=f'{ucx_material}SG')
+                cmds.connectAttr(f'{ucx_material}.outColor', f'{shading_group}.surfaceShader', force=True)
+                cmds.setAttr(f'{ucx_material}.color', 1, 0, 0, type='double3')
+                cmds.setAttr(f'{ucx_material}.transparency', 0.75, 0.75, 0.75, type='double3')
+            else:
+                print("Using existing material 'UCX_M'")
+                shading_group = cmds.listConnections('UCX_M', type='shadingEngine')[0]
+
+            # Double-check if the UCX object exists before assigning the material
+            if cmds.objExists(ucx_name):
+                print(f"Assigning material 'UCX_M' to {ucx_name}")
+                cmds.sets(ucx_name, edit=True, forceElement=shading_group)
+            else:
+                print(f"Error: UCX object '{ucx_name}' does not exist and cannot be assigned a material.")
+
+            # Name the layer as the original object's name with "_layer" appended
+            layer_name = f"{obj_name}_layer"
+
+            # Create a new display layer with the determined name
+            new_layer = cmds.createDisplayLayer(name=layer_name, empty=True)
+
+            # Add the renamed static mesh and its UCX copy to the new display layer
+            cmds.editDisplayLayerMembers(new_layer, [renamed_mesh, ucx_name])
+        else:
+            print(f"Error: The selected object '{obj_name}' is not of type 'transform'.")
+    else:
+        # If multiple objects are selected, generate a group-based layer name
+        base_name = "group"
+        existing_layers = cmds.ls(type="displayLayer")  # Get a list of existing display layers
+        index = 1
+        layer_name = f"{base_name}_{index}_layer"  # Start with a base name, index, and "_layer"
+        
+        # Increment the index until a unique layer name is found
+        while layer_name in existing_layers:
+            index += 1
+            layer_name = f"{base_name}_{index}_layer"
+        
+        # Create a new display layer with the determined name
+        new_layer = cmds.createDisplayLayer(name=layer_name, empty=True)
+        
+        # Add all selected objects to the display layer
         cmds.editDisplayLayerMembers(new_layer, selected_objects)
+
+    # Update the UI to reflect the new layer
     update_display_layer_ui()
 
 def rename_layer(layer, text_field):
@@ -212,18 +272,75 @@ def remove_objects_from_layer(layer):
             cmds.editDisplayLayerMembers('defaultLayer', object)
     update_display_layer_ui()
 
+def move_layer_up(layer, layer_list):
+    index = layer_list.index(layer)
+    if index > 0:
+        # Swap the displayOrder of the current layer with the one above it
+        current_order = cmds.getAttr(f"{layer}.displayOrder")
+        above_order = cmds.getAttr(f"{layer_list[index - 1]}.displayOrder")
+
+        # Set the new displayOrder for both layers
+        cmds.setAttr(f"{layer}.displayOrder", above_order)
+        cmds.setAttr(f"{layer_list[index - 1]}.displayOrder", current_order)
+
+        # Swap the layers in the list
+        layer_list[index], layer_list[index - 1] = layer_list[index - 1], layer_list[index]
+        
+        new_layer = cmds.createDisplayLayer(name="NewLayer", empty=True)
+        cmds.delete(new_layer)
+        
+        # Update the UI
+        update_display_layer_ui()
+
+def move_layer_down(layer, layer_list):
+    index = layer_list.index(layer)
+    if index < len(layer_list) - 1:
+        # Swap the displayOrder of the current layer with the one below it
+        current_order = cmds.getAttr(f"{layer}.displayOrder")
+        below_order = cmds.getAttr(f"{layer_list[index + 1]}.displayOrder")
+
+        # Set the new displayOrder for both layers
+        cmds.setAttr(f"{layer}.displayOrder", below_order)
+        cmds.setAttr(f"{layer_list[index + 1]}.displayOrder", current_order)
+
+        # Swap the layers in the list
+        layer_list[index], layer_list[index + 1] = layer_list[index + 1], layer_list[index]
+        
+        new_layer = cmds.createDisplayLayer(name="NewLayer", empty=True)
+        cmds.delete(new_layer)
+        
+        # Update the UI
+        update_display_layer_ui()
+
 def create_display_layer_ui():
+    # Delete the existing UI if it exists to avoid duplication
     if cmds.workspaceControl(DISPLAY_LAYER_WORKSPACE_CONTROL_NAME, exists=True):
         cmds.deleteUI(DISPLAY_LAYER_WORKSPACE_CONTROL_NAME, control=True)
 
+    # Create the workspace control and set it to restore the previous state
+    cmds.workspaceControl(
+        DISPLAY_LAYER_WORKSPACE_CONTROL_NAME,
+        label="Display Layer Editor",
+        retain=False
+        #loadImmediately=True  # Load the workspace immediately
+    )
+
     BROWSE_BUTTON_NAME_DICT.clear()
 
-    workspace_ctrl = cmds.workspaceControl(DISPLAY_LAYER_WORKSPACE_CONTROL_NAME, label="Display Layer Editor")
     cmds.columnLayout(adjustableColumn=True)
 
     cmds.text(label="Display Layers", align='left', height=20)
 
+    layer_dict = {}
     layer_list = cmds.ls(type="displayLayer")
+
+    # Reorder the layers
+    for layer in layer_list:
+        layer_display_order_name = '{}.displayOrder'.format(layer)
+        layer_dict[layer] = cmds.getAttr(layer_display_order_name)
+    for layer, display_order in layer_dict.items():
+        new_value = len(layer_list) - display_order - 1
+        layer_list[new_value] = layer
 
     for layer in layer_list:
         BROWSE_BUTTON_NAME_DICT[layer] = '{}_browse_button'.format(layer)
@@ -250,7 +367,27 @@ def create_display_layer_ui():
         display_type = cmds.getAttr(layer + ".displayType")
         checkbox_label = " " if display_type == 0 else "T" if display_type == 1 else "R" if display_type == 2 else "T"
         template_checkbox = cmds.checkBox(label=checkbox_label, value=(display_type != 0), width=30)
-        
+
+        # UCX Visibility
+        layer_members = cmds.editDisplayLayerMembers(layer, q=True)
+        separated_layer_name = layer.split('_')
+        layer_name_parts = separated_layer_name[:-1]
+        layer_name = '_'.join(layer_name_parts)
+        if len(layer_members) == 4:
+            if 'SM_{}'.format(layer_name) in layer_members:
+                if 'UCX_SM_{}'.format(layer_name) in layer_members:
+                    ucx = 'UCX_SM_{}'.format(layer_name)
+                    ucx_visibility = cmds.getAttr(ucx + ".visibility")
+                    cmds.checkBox(label="UCX", value=ucx_visibility, width=45,
+                                  onCommand=lambda *args, l=ucx: cmds.setAttr(l + ".visibility", 1),
+                                  offCommand=lambda *args, l=ucx: cmds.setAttr(l + ".visibility", 0))
+                else:
+                    cmds.separator(width=45)
+            else:
+                cmds.separator(width=45)
+        else:
+            cmds.separator(width=45)
+
         # Color Box
         layer_color = get_layer_color(layer)
         color_box = cmds.iconTextButton(style='textOnly', label="", width=30, bgc=layer_color,
@@ -260,7 +397,22 @@ def create_display_layer_ui():
         cmds.checkBox(template_checkbox, edit=True, 
                       onCommand=lambda *args, c=template_checkbox, l=layer: toggle_display_type(l, c), 
                       offCommand=lambda *args, c=template_checkbox, l=layer: toggle_display_type(l, c))
+
+        # Existing code that sets up the UI for each layer (skipping the default layer)
+        #layer_row_layout = cmds.rowLayout(numberOfColumns=9, adjustableColumn=True, columnAlign=(1, 'left'))
         
+        # Up Button
+        if layer != layer_list[0]:  # No up button for the first layer
+            cmds.button(label="↑", width=30, command=lambda *args, l=layer: move_layer_up(l, layer_list))
+        else:
+            cmds.separator(width=30)
+
+        # Down Button
+        if layer != layer_list[-2]:  # No down button for the last layer
+            cmds.button(label="↓", width=30, command=lambda *args, l=layer: move_layer_down(l, layer_list))
+        else:
+            cmds.separator(width=30)
+
         # Ensure the correct initial label
         if display_type == 0:
             cmds.checkBox(template_checkbox, edit=True, label=" ", value=False)
@@ -276,12 +428,6 @@ def create_display_layer_ui():
                 color = [.5, .5, .5]
         else:
             color = [0.5, 0.5, 0.5]  # Default color if not set
-
-        if color:
-            color_field = cmds.colorSliderGrp(label="Color", rgb=(color[0], color[1], color[2]), width=100)
-        else:
-            color_field = cmds.colorSliderGrp(label="Color", width=100)
-        cmds.colorSliderGrp(color_field, edit=True, changeCommand=lambda *args, l=layer, cf=color_field: set_layer_color(l, cf))    
 
         # Browse button
         cmds.button(BROWSE_BUTTON_NAME_DICT[layer], label="...", width=50, command=lambda *args, b=BROWSE_BUTTON_NAME_DICT[layer]: browse(b), annotation=paths_dict[layer])
