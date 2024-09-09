@@ -38,10 +38,6 @@ def browse(browseButton):
 
 #Export defined
 
-def extra_exportFBX1(*args):
-    """exports the selection to the first browse path in the directory_history"""
-    exportFBX(next(iter(BROWSE_BUTTON_NAME_DICT.keys())))
-
 def exportFBX(layer):
     """
     Checks if auto unwrap is necessary and
@@ -60,7 +56,8 @@ def exportFBX(layer):
     if paths_dict[layer]=='':
         paths_dict[layer]=next(iter(paths_dict.values()))
     path_to_export = paths_dict[layer]
-    export_name_with_path='{}/{}'.format(path_to_export,layer)
+    fbx='SM_{}'.format(layer)
+    export_name_with_path='{}/{}'.format(path_to_export,fbx)
     if not cmds.pluginInfo('fbxmaya', query=True, loaded=True):
         cmds.loadPlugin('fbxmaya')
     objects_in_layer = cmds.editDisplayLayerMembers(layer, query=True) or []
@@ -208,8 +205,8 @@ def add_layer(*args):
             else:
                 print(f"Error: UCX object '{ucx_name}' does not exist and cannot be assigned a material.")
 
-            # Name the layer as the original object's name with "_layer" appended
-            layer_name = f"{obj_name}_layer"
+            # Name the layer as the original object's name without appended
+            layer_name = f"{obj_name}"
 
             # Create a new display layer with the determined name
             new_layer = cmds.createDisplayLayer(name=layer_name, empty=True)
@@ -223,29 +220,78 @@ def add_layer(*args):
         base_name = "group"
         existing_layers = cmds.ls(type="displayLayer")  # Get a list of existing display layers
         index = 1
-        layer_name = f"{base_name}_{index}_layer"  # Start with a base name, index, and "_layer"
+        layer_name = f"{base_name}_{index}"  
         
         # Increment the index until a unique layer name is found
         while layer_name in existing_layers:
             index += 1
-            layer_name = f"{base_name}_{index}_layer"
+            layer_name = f"{base_name}_{index}"
         
         # Create a new display layer with the determined name
         new_layer = cmds.createDisplayLayer(name=layer_name, empty=True)
         
-        # Add all selected objects to the display layer
-        cmds.editDisplayLayerMembers(new_layer, selected_objects)
+        # Call the new function to create UCX copies and groups for each selected object
+        ucx_groups = baking_tools_core.ucx_process_mult(selected_objects)
+        
+        # Check if the material 'UCX_M' already exists
+        if not cmds.objExists('UCX_M'):
+            print("Creating new material 'UCX_M'")
+            ucx_material = cmds.shadingNode('lambert', asShader=True, name='UCX_M')
+            shading_group = cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name=f'{ucx_material}SG')
+            cmds.connectAttr(f'{ucx_material}.outColor', f'{shading_group}.surfaceShader', force=True)
+            cmds.setAttr(f'{ucx_material}.color', 1, 0, 0, type='double3')
+            cmds.setAttr(f'{ucx_material}.transparency', 0.75, 0.75, 0.75, type='double3')
+        else:
+            print("Using existing material 'UCX_M'")
+            shading_group = cmds.listConnections('UCX_M', type='shadingEngine')[0]
+        
+        # Add all original objects and their UCX copies to the display layer
+        all_groups = []
+        ucx_objects = [] 
+        for static_mesh, ucx_copy, group in ucx_groups:
+            # Add the UCX object to the list
+            ucx_objects.append(ucx_copy)
+            
+             # Assign the UCX material
+            cmds.sets(ucx_copy, edit=True, forceElement=shading_group)
+            cmds.editDisplayLayerMembers(new_layer, [static_mesh, ucx_copy])
+            
+            # Collect the groups of the original objects and UCX for the larger group
+            all_groups.append(group)
+        
+        # Group all smaller groups under a new larger group named after the display layer
+        cmds.group(all_groups, name=f"{layer_name}_layer")
 
     # Update the UI to reflect the new layer
     update_display_layer_ui()
 
 def rename_layer(layer, text_field):
+
+    #Define new layer and group names
     new_name = cmds.textField(text_field, query=True, text=True)
+    new_group_name = '{}_grp'.format(new_name)
+
+    #If name not unique
     if cmds.objExists(new_name):
         cmds.warning(f"An object named '{new_name}' already exists. Choose a different name.")
     else:
+        layer_members = cmds.editDisplayLayerMembers(layer, q=True)
+        #Check that the member whose parent is the group is not a shape
+        for member in layer_members:
+            if 'Shape' not in member:
+                group_name = cmds.listRelatives(member, parent=True)
+                break
+
+        #Rename
         cmds.rename(layer, new_name)
+        cmds.rename(group_name, new_group_name)
         update_display_layer_ui()
+
+def toggle_ucx_visibility(ucx_objects, visibility):
+    """ Toggles the visibility of all UCX objects in the list. """
+    for ucx in ucx_objects:
+        if cmds.objExists(ucx):
+            cmds.setAttr(ucx + ".visibility", visibility)
 
 def update_display_layer_ui():
     if cmds.workspaceControl(DISPLAY_LAYER_WORKSPACE_CONTROL_NAME, exists=True):
@@ -370,21 +416,16 @@ def create_display_layer_ui():
 
         # UCX Visibility
         layer_members = cmds.editDisplayLayerMembers(layer, q=True)
-        separated_layer_name = layer.split('_')
-        layer_name_parts = separated_layer_name[:-1]
-        layer_name = '_'.join(layer_name_parts)
-        if len(layer_members) == 4:
-            if 'SM_{}'.format(layer_name) in layer_members:
-                if 'UCX_SM_{}'.format(layer_name) in layer_members:
-                    ucx = 'UCX_SM_{}'.format(layer_name)
-                    ucx_visibility = cmds.getAttr(ucx + ".visibility")
-                    cmds.checkBox(label="UCX", value=ucx_visibility, width=45,
-                                  onCommand=lambda *args, l=ucx: cmds.setAttr(l + ".visibility", 1),
-                                  offCommand=lambda *args, l=ucx: cmds.setAttr(l + ".visibility", 0))
-                else:
-                    cmds.separator(width=45)
-            else:
-                cmds.separator(width=45)
+        ucx_objects = [obj for obj in layer_members if obj.startswith("UCX_")]
+
+        if ucx_objects:
+            # Get the visibility of the first UCX object (assuming all have the same visibility)
+            ucx_visibility = cmds.getAttr(ucx_objects[0] + ".visibility")
+            
+            # Create the checkbox to control visibility of all UCX objects
+            cmds.checkBox(label="UCX", value=ucx_visibility, width=45,
+                          onCommand=lambda *args, ucx_list=ucx_objects: toggle_ucx_visibility(ucx_list, 1),
+                          offCommand=lambda *args, ucx_list=ucx_objects: toggle_ucx_visibility(ucx_list, 0))
         else:
             cmds.separator(width=45)
 
