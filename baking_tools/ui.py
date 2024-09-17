@@ -447,7 +447,7 @@ def create_display_layer_ui():
 
     #Controls for all
     cmds.rowLayout(numberOfColumns=9, adjustableColumn=True, columnAlign=(1, 'left'))
-    cmds.text(label="All Display Layers", align='left', height=20)
+    cmds.text(label="All Layers", align='left', height=20)
 
     # Visibility all
     visibility_checkboxes = []
@@ -476,7 +476,7 @@ def create_display_layer_ui():
     cmds.button(BROWSE_BUTTON_NAME_DICT['defaultLayer'], label="...", width=50, command=lambda *args, b=BROWSE_BUTTON_NAME_DICT['defaultLayer']: browse(b), annotation=paths_dict['defaultLayer'])
 
     #Export all
-    cmds.button(label="Export all", width=100, command=lambda *args, l=layer_list: export_all_layers(l))
+    cmds.button(label="Export All", width=100, command=lambda *args, l=layer_list: export_all_layers(l))
 
     cmds.setParent('..')
 
