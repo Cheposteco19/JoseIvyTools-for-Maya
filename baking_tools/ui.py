@@ -53,17 +53,25 @@ def exportFBX(layer):
     if all(value == '' for value in paths_dict.values()):
         cmds.warning(("Please browse and select a folder to export the layer to"))
         return
-    if paths_dict[layer]=='':
-        paths_dict[layer]=next(iter(paths_dict.values()))
+    if paths_dict[layer] == '':
+        paths_dict[layer] = paths_dict['defaultLayer']
     path_to_export = paths_dict[layer]
-    fbx='SM_{}'.format(layer)
-    export_name_with_path='{}/{}'.format(path_to_export,fbx)
+    fbx = 'SM_{}'.format(layer)
+    export_name_with_path = '{}/{}'.format(path_to_export,fbx)
     if not cmds.pluginInfo('fbxmaya', query=True, loaded=True):
         cmds.loadPlugin('fbxmaya')
     objects_in_layer = cmds.editDisplayLayerMembers(layer, query=True) or []
     cmds.select(clear=True)
     cmds.select(objects_in_layer, replace=True)
     cmds.file(export_name_with_path, force=True, options='v=0;', type='FBX export', exportSelected=True, preserveReferences=True)
+
+#Export All Layers
+def export_all_layers(layer_list):
+    for layer in layer_list:
+        if layer == 'defaultLayer':
+            continue
+        exportFBX(layer)
+
 
 def save_paths_to_file():
     """
@@ -81,8 +89,6 @@ def read_directories_from_browse_buttons():
     """
     paths_dict={}
     for layer, button in BROWSE_BUTTON_NAME_DICT.items():
-        if button == 'defaultLayer_browse_button':
-            continue
         path=cmds.button(button, query=True, annotation=True)
         paths_dict[layer]=path
     return paths_dict
@@ -129,9 +135,10 @@ def read_directory_from_file():
 def toggle_display_type(layer, checkbox):
     current_state = cmds.getAttr(layer + ".displayType")
     new_state = (current_state + 1) % 3  # Cycle through 0, 1, 2
+    set_display_type(layer, checkbox, new_state)
 
+def set_display_type(layer, checkbox, new_state):
     cmds.setAttr(layer + ".displayType", new_state)
-
     if new_state == 0:
         cmds.checkBox(checkbox, edit=True, label=" ", value=False)
     elif new_state == 1:
@@ -139,13 +146,38 @@ def toggle_display_type(layer, checkbox):
     elif new_state == 2:
         cmds.checkBox(checkbox, edit=True, label="R", value=True)
 
-"""def set_layer_color(layer):
-    color = cmds.colorEditor()
-    if cmds.colorEditor(query=True, result=True):
-        rgb = cmds.colorEditor(query=True, rgb=True)
-        cmds.setAttr(layer + ".overrideColorRGB", rgb[0], rgb[1], rgb[2])
-        cmds.setAttr(layer + ".overrideRGBColors", 1)
-        update_display_layer_ui()"""
+# Add the "Global Display Type" Checkbox (to control all layers except defaultLayer)
+def toggle_all_display_types(layers, display_type_checkboxes):
+    current_state = cmds.checkBox(display_type_checkboxes[-1], query=True, label=True)
+
+    if current_state == 'R':
+        cmds.checkBox(display_type_checkboxes[-1], edit=True, label=" ", value=False)
+        new_state = 0
+    elif current_state == ' ':
+        cmds.checkBox(display_type_checkboxes[-1], edit=True, label="T", value=True)
+        new_state = 1
+    elif current_state == 'T':
+        cmds.checkBox(display_type_checkboxes[-1], edit=True, label="R", value=True)
+        new_state = 2
+
+    for index, layer in enumerate(layers):
+        if layer != "defaultLayer":
+            set_display_type(layer, display_type_checkboxes[index], new_state)
+
+def toggle_all_visibility(layers, visibility_checkboxes):
+    current_state = cmds.checkBox(visibility_checkboxes[-1], query=True, value=True)  # Check the checkbox state (True if checked)
+
+    # If it's checked, turn all layers' visibility on, otherwise turn them off
+    if current_state:
+        new_visibility = True
+    else:
+        new_visibility = False
+
+    # Apply the new visibility to all layers except the defaultLayer
+    for index, layer in enumerate(layers):
+        if layer != "defaultLayer":
+            cmds.setAttr(f"{layer}.visibility", new_visibility)
+            cmds.checkBox(visibility_checkboxes[index], edit=True, value=new_visibility)
 
 def set_layer_color(layer, color_field=None):
     if color_field:
@@ -277,10 +309,9 @@ def rename_layer(layer, text_field):
     else:
         layer_members = cmds.editDisplayLayerMembers(layer, q=True)
         #Check that the member whose parent is the group is not a shape
-        for member in layer_members:
-            if 'Shape' not in member:
-                group_name = cmds.listRelatives(member, parent=True)
-                break
+        group_name = cmds.listRelatives(layer_members[0], parent=True)
+        while cmds.listRelatives(group_name, parent=True):
+            group_name = cmds.listRelatives(group_name, parent=True)
 
         #Rename
         cmds.rename(layer, new_name)
@@ -292,6 +323,29 @@ def toggle_ucx_visibility(ucx_objects, visibility):
     for ucx in ucx_objects:
         if cmds.objExists(ucx):
             cmds.setAttr(ucx + ".visibility", visibility)
+
+def toggle_all_ucx_visibility(layers, ucx_visibility_checkboxes):
+    current_state = cmds.checkBox(ucx_visibility_checkboxes[-1], query=True, value=True)  
+
+    # If it's checked, turn all UCX objects' visibility on, otherwise turn them off
+    if current_state:
+        new_visibility = True
+    else:
+        new_visibility = False
+
+    # Iterate through layers to find and toggle UCX objects
+    for index, layer in enumerate(layers):
+        if layer == "defaultLayer":
+            continue  # Skip the default layer
+        
+        # Get UCX objects in this layer
+        layer_members = cmds.editDisplayLayerMembers(layer, q=True)
+        ucx_objects = [obj for obj in layer_members if obj.startswith("UCX_")]
+
+        if ucx_objects:
+            # Set visibility for all UCX objects in the layer
+            toggle_ucx_visibility(ucx_objects, new_visibility)
+            cmds.checkBox(ucx_visibility_checkboxes[index], edit=True, value=new_visibility)
 
 def update_display_layer_ui():
     if cmds.workspaceControl(DISPLAY_LAYER_WORKSPACE_CONTROL_NAME, exists=True):
@@ -375,8 +429,6 @@ def create_display_layer_ui():
 
     cmds.columnLayout(adjustableColumn=True)
 
-    cmds.text(label="Display Layers", align='left', height=20)
-
     layer_dict = {}
     layer_list = cmds.ls(type="displayLayer")
 
@@ -393,7 +445,42 @@ def create_display_layer_ui():
 
     paths_dict = read_directory_from_file()
 
-    for layer in layer_list:
+    #Controls for all
+    cmds.rowLayout(numberOfColumns=9, adjustableColumn=True, columnAlign=(1, 'left'))
+    cmds.text(label="Display Layers", align='left', height=20)
+
+    # Visibility all
+    visibility_checkboxes = []
+    visibility_checkboxes.append(cmds.checkBox(label="V", width=30,
+                                           onCommand=lambda *args: toggle_all_visibility(layer_list, visibility_checkboxes),
+                                           offCommand=lambda *args: toggle_all_visibility(layer_list, visibility_checkboxes)))
+
+    #Display type all
+    display_type_checkboxes = []
+    if not display_type_checkboxes:
+        display_type_checkboxes.append('')
+    display_type_checkboxes[-1] = cmds.checkBox(label=' ', value=0, width=30)
+
+     # UCX Visibility all
+    ucx_visibility_checkboxes = []
+    ucx_visibility_checkboxes.append(cmds.checkBox(label="UCX", width=45,
+                                                   onCommand=lambda *args: toggle_all_ucx_visibility(layer_list, ucx_visibility_checkboxes),
+                                                   offCommand=lambda *args: toggle_all_ucx_visibility(layer_list, ucx_visibility_checkboxes)))
+
+    #Separators
+    cmds.separator(width=30)
+    cmds.separator(width=30)
+    cmds.separator(width=30)
+
+    #Browse all
+    cmds.button(BROWSE_BUTTON_NAME_DICT['defaultLayer'], label="...", width=50, command=lambda *args, b=BROWSE_BUTTON_NAME_DICT['defaultLayer']: browse(b), annotation=paths_dict['defaultLayer'])
+
+    #Export all
+    cmds.button(label="Export", width=100, command=lambda *args, l=layer_list: export_all_layers(l))
+
+    cmds.setParent('..')
+
+    for index, layer in enumerate(layer_list):
         if layer == "defaultLayer":
             continue  # Skip the default layer
 
@@ -405,16 +492,18 @@ def create_display_layer_ui():
 
         # Visibility Checkbox
         visibility = cmds.getAttr(layer + ".visibility")
-        cmds.checkBox(label="V", value=visibility, width=30, 
+        visibility_checkboxes.insert(index, '')
+        visibility_checkboxes[index] = cmds.checkBox(label="V", value=visibility, width=30, 
                       onCommand=lambda *args, l=layer: cmds.setAttr(l + ".visibility", 1), 
                       offCommand=lambda *args, l=layer: cmds.setAttr(l + ".visibility", 0))
         
         # Template/Reference Checkbox
         display_type = cmds.getAttr(layer + ".displayType")
         checkbox_label = " " if display_type == 0 else "T" if display_type == 1 else "R" if display_type == 2 else "T"
-        template_checkbox = cmds.checkBox(label=checkbox_label, value=(display_type != 0), width=30)
+        display_type_checkboxes.insert(index,'')
+        display_type_checkboxes[index] = cmds.checkBox(label=checkbox_label, value=(display_type != 0), width=30)
 
-        # UCX Visibility
+        # UCX Visibility (individual)
         layer_members = cmds.editDisplayLayerMembers(layer, q=True)
         ucx_objects = [obj for obj in layer_members if obj.startswith("UCX_")]
 
@@ -423,10 +512,12 @@ def create_display_layer_ui():
             ucx_visibility = cmds.getAttr(ucx_objects[0] + ".visibility")
             
             # Create the checkbox to control visibility of all UCX objects
-            cmds.checkBox(label="UCX", value=ucx_visibility, width=45,
-                          onCommand=lambda *args, ucx_list=ucx_objects: toggle_ucx_visibility(ucx_list, 1),
-                          offCommand=lambda *args, ucx_list=ucx_objects: toggle_ucx_visibility(ucx_list, 0))
+            ucx_visibility_checkboxes.insert(index, '')
+            ucx_visibility_checkboxes[index] = cmds.checkBox(label="UCX", value=ucx_visibility, width=45,
+                                                             onCommand=lambda *args, ucx_list=ucx_objects: toggle_ucx_visibility(ucx_list, 1),
+                                                             offCommand=lambda *args, ucx_list=ucx_objects: toggle_ucx_visibility(ucx_list, 0))
         else:
+            ucx_visibility_checkboxes.insert(index, '')
             cmds.separator(width=45)
 
         # Color Box
@@ -434,10 +525,10 @@ def create_display_layer_ui():
         color_box = cmds.iconTextButton(style='textOnly', label="", width=30, bgc=layer_color,
                                         command=lambda *args, l=layer: set_layer_color(l))  
         
-        # Correctly reference the checkbox
-        cmds.checkBox(template_checkbox, edit=True, 
-                      onCommand=lambda *args, c=template_checkbox, l=layer: toggle_display_type(l, c), 
-                      offCommand=lambda *args, c=template_checkbox, l=layer: toggle_display_type(l, c))
+        # Correctly reference the display type checkbox
+        cmds.checkBox(display_type_checkboxes[index], edit=True,
+                      onCommand=lambda *args, c=display_type_checkboxes[index], l=layer: toggle_display_type(l, c),
+                      offCommand=lambda *args, c=display_type_checkboxes[index], l=layer: toggle_display_type(l, c))
 
         # Existing code that sets up the UI for each layer (skipping the default layer)
         #layer_row_layout = cmds.rowLayout(numberOfColumns=9, adjustableColumn=True, columnAlign=(1, 'left'))
@@ -456,11 +547,11 @@ def create_display_layer_ui():
 
         # Ensure the correct initial label
         if display_type == 0:
-            cmds.checkBox(template_checkbox, edit=True, label=" ", value=False)
+            cmds.checkBox(display_type_checkboxes[index], edit=True, label=" ", value=False)
         elif display_type == 1:
-            cmds.checkBox(template_checkbox, edit=True, label="T", value=True)
+            cmds.checkBox(display_type_checkboxes[index], edit=True, label="T", value=True)
         elif display_type == 2:
-            cmds.checkBox(template_checkbox, edit=True, label="R", value=True)
+            cmds.checkBox(display_type_checkboxes[index], edit=True, label="R", value=True)
 
         # Color Picker
         if cmds.attributeQuery("overrideColorRGB", node=layer, exists=True):
@@ -483,6 +574,11 @@ def create_display_layer_ui():
         cmds.menuItem(label="Remove Selected Objects", command=lambda *args, l=layer: remove_objects_from_layer(l))
         
         cmds.setParent('..')  # End rowLayout
+
+    # Correctly reference the all display type checkbox
+    cmds.checkBox(display_type_checkboxes[-1], edit=True,
+                  onCommand=lambda *args, c=display_type_checkboxes, l=layer_list: toggle_all_display_types(l, c),
+                  offCommand=lambda *args, c=display_type_checkboxes, l=layer_list: toggle_all_display_types(l, c))
     
     # Add Layer Button
     cmds.button(label="Add Layer", command=add_layer)
