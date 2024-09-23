@@ -15,4 +15,10 @@ If the installer doesn't work:
 1. Open Maya (if Maya is allready open, close it and then open it again).
 1. The shelf with the tools loaded will be there ready to be used.
 
+How to use the custom layer editor
+1. Creating a layer with a mesh selected will create a copy of the mesh to be used as collision.
+1. Control the visibility of the entire layer, static meshes only or collision meshes only to help yourself on your work flow.
+1. Keep the naming convention SM_**, UCX_SM_** and **_grp naming convention in the outliner
+1. Use the custom layer editor not the outliner to rename the layer as desired
+
 Created by: Jose Munguia and Ivy Medina
