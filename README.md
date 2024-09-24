@@ -20,5 +20,6 @@ How to use the custom layer editor
 1. Control the visibility of the entire layer, static meshes only or collision meshes only to help yourself on your work flow.
 1. Keep the naming convention SM_**, UCX_SM_** and **_grp naming convention in the outliner
 1. Use the custom layer editor not the outliner to rename the layer as desired
+1. Be carefull to have all meshes with unique names
 
 Created by: Jose Munguia and Ivy Medina
