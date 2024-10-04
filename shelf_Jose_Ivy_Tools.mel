@@ -34,7 +34,7 @@ global proc shelf_Jose_Ivy_Tools () {
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
-        -command "import baking_tools.ui as bake_ui\nimport importlib\nimportlib.reload(bake_ui)\n\nbake_ui.create_display_layer_ui()" 
+        -command "import baking_tools.ui as baking_tools_ui\nimport importlib\nimportlib.reload(baking_tools_ui)\n\nif cmds.workspaceControl(baking_tools_ui.DISPLAY_LAYER_WORKSPACE_CONTROL_NAME, exists=True):\n    print('Workspace exist')\n    cmds.deleteUI(baking_tools_ui.DISPLAY_LAYER_WORKSPACE_CONTROL_NAME)\n\n# Create the workspace control and set it to restore the previous state\nelse:\n    print('Workspace didnt existed')\ncmds.workspaceControl(baking_tools_ui.DISPLAY_LAYER_WORKSPACE_CONTROL_NAME, label=\"Display Layer Editor\",\n                      retain=False, floating=True,\n                      uiScript='baking_tools_ui.display_layer_ui().create_display_layer_ui()')\ncmds.workspaceControl(baking_tools_ui.DISPLAY_LAYER_WORKSPACE_CONTROL_NAME, edit=True, restore=True)\ncmds.workspaceControl(baking_tools_ui.DISPLAY_LAYER_WORKSPACE_CONTROL_NAME, edit=True, visible=True)" 
         -sourceType "python" 
         -commandRepeatable 1
         -flat 1
