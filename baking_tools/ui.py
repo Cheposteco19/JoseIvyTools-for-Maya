@@ -469,6 +469,124 @@ def move_layer_down(layer, layer_list):
         # Update the UI
         update_display_layer_ui()
 
+# Dictionary to store the original locators and positions for each group
+original_locators = {}
+
+def toggle_layer_origin(layer, checkbox, move_to_origin):
+    """
+    Toggle the position of the group in the layer between the origin and its original position.
+    This version avoids zeroing out the group or modifying its local transforms.
+    """
+
+    def create_locator_at_origin():
+        """
+        Create a temporary locator at the world origin (0, 0, 0).
+        Returns the name of the locator.
+        """
+        locator_name = cmds.spaceLocator(position=(0, 0, 0))[0]
+        cmds.xform(locator_name, worldSpace=True, translation=(0, 0, 0))
+        return locator_name
+
+    def create_locator_at_group(group):
+        """
+        Create a locator at the group's **world space pivot point** for reference.
+        This ensures the locator is positioned at the group’s actual world position,
+        even if the group's transforms are frozen or zeroed out.
+        """
+        locator_name = cmds.spaceLocator(name=f"tempLocator_{group}")[0]
+
+        # Get the group's world space matrix (accurate even if transforms are zeroed)
+        world_matrix = cmds.xform(group, query=True, matrix=True, worldSpace=True)
+
+        # Extract the translation from the world matrix
+        translation = (world_matrix[12], world_matrix[13], world_matrix[14])
+
+        # Move the locator to the group's world space position
+        cmds.xform(locator_name, translation=translation, worldSpace=True)
+
+        return locator_name
+
+    # Get the objects in the display layer
+    objects_in_layer = cmds.editDisplayLayerMembers(layer, query=True)
+
+    if not objects_in_layer:
+        cmds.warning(f"No objects found in layer {layer}.")
+        return
+
+    # Filter out invalid objects and ensure we're only working with valid transform nodes
+    valid_groups = [obj for obj in objects_in_layer if cmds.nodeType(obj) == 'transform']
+
+    if not valid_groups:
+        cmds.warning(f"No valid transform groups found in layer {layer}.")
+        return
+
+    if move_to_origin:
+        # Move groups to origin (0, 0, 0)
+        origin_locator = create_locator_at_origin()  # Create a locator at the origin
+
+        for group in valid_groups:
+            # Save the original position of the group before moving to origin
+            if group not in original_locators:
+                try:
+                    # Create a locator at the group's original world space position
+                    original_locators[group] = {
+                        'locator': create_locator_at_group(group),  # Store the locator for the group
+                        'translation': cmds.xform(group, query=True, worldSpace=True, translation=True),
+                        'rotation': cmds.xform(group, query=True, worldSpace=True, rotation=True)
+                    }
+                    print(f"Saving original position for group {group}: {original_locators[group]}")
+                except RuntimeError as e:
+                    cmds.warning(f"Could not query original position for {group}: {e}")
+                    continue  # Skip if we can't query the position
+
+            # Move the group to the origin by setting the translation to (0, 0, 0)
+            cmds.xform(group, worldSpace=True, translation=(0, 0, 0))
+            print(f"Moved group {group} to origin")
+
+        # Delete the temporary origin locator
+        cmds.delete(origin_locator)
+
+    else:
+        # Restore the groups to their original positions
+        for group in valid_groups:
+            if group in original_locators and cmds.objExists(group):
+                try:
+                    print(f"Restoring original position for group {group}: {original_locators[group]['translation']}")
+
+                    # Restore both translation and rotation in world space
+                    cmds.xform(group, worldSpace=True, translation=original_locators[group]['translation'])
+                    cmds.xform(group, worldSpace=True, rotation=original_locators[group]['rotation'])
+                    print(f"Restored group {group} to original position")
+
+                    # Delete the locator created for this group
+                    locator_to_delete = original_locators[group]['locator']
+                    if cmds.objExists(locator_to_delete):
+                        cmds.delete(locator_to_delete)
+
+                    # Remove the group from original_locators after restoration
+                    del original_locators[group]
+                except RuntimeError as e:
+                    cmds.warning(f"Could not restore original position for {group}: {e}")
+                    continue  # Skip if we can't restore the position
+
+def toggle_all_origin(layers, origin_checkboxes):
+    """
+    Toggle the position of objects in all layers between origin and their original positions.
+    """
+    current_state = cmds.checkBox(origin_checkboxes[-1], query=True, value=True)
+
+    if current_state:
+        move_to_origin = True
+    else:
+        move_to_origin = False
+
+    for index, layer in enumerate(layers):
+        if layer == "defaultLayer":
+            continue  # Skip the default layer
+
+        # Toggle the objects' position in the current layer
+        toggle_layer_origin(layer, origin_checkboxes[index], move_to_origin)
+
 class display_layer_ui(object):
     def __init__(self):
         print('display layer ui constructed')
@@ -505,7 +623,7 @@ class display_layer_ui(object):
         paths_dict = read_directory_from_file()
 
         # Controls for all
-        cmds.rowLayout(numberOfColumns=10, adjustableColumn=True, columnAlign=(1, 'left'))
+        cmds.rowLayout(numberOfColumns=11, adjustableColumn=True, columnAlign=(1, 'left'))
         cmds.text(label="All Layers", align='center', height=20)
 
         # Visibility all
@@ -543,6 +661,13 @@ class display_layer_ui(object):
         cmds.separator(width=30)
         cmds.separator(width=30)
         cmds.separator(width=30)
+        
+        
+        # Origin Checkbox all
+        origin_checkboxes = []
+        origin_checkboxes.append(cmds.checkBox(label="Origin", width=60, annotation='Move All to Origin',
+                                       onCommand=lambda *args: toggle_all_origin(layer_list, origin_checkboxes),
+                                       offCommand=lambda *args: toggle_all_origin(layer_list, origin_checkboxes)))
 
         # Browse all
         cmds.button(BROWSE_BUTTON_NAME_DICT['defaultLayer'], label="...", width=50,
@@ -558,7 +683,7 @@ class display_layer_ui(object):
             if layer == "defaultLayer":
                 continue  # Skip the default layer
 
-            layer_row_layout = cmds.rowLayout(numberOfColumns=10, adjustableColumn=True, columnAlign=(1, 'left'))
+            layer_row_layout = cmds.rowLayout(numberOfColumns=11, adjustableColumn=True, columnAlign=(1, 'left'))
 
             # Layer Name
             text_field = cmds.textField(width=100)
@@ -667,6 +792,12 @@ class display_layer_ui(object):
             else:
                 color = [0.5, 0.5, 0.5]  # Default color if not set
 
+            # ** Origin Checkbox for each layer **
+            origin_checkboxes.insert(index, '')
+            origin_checkboxes[index] = cmds.checkBox(label="Origin", width=60, annotation='Move to Origin',
+                                        onCommand=lambda *args, l=layer: toggle_layer_origin(l, origin_checkboxes[index], True),
+                                        offCommand=lambda *args, l=layer: toggle_layer_origin(l, origin_checkboxes[index], False))
+
             # Browse button
             cmds.button(BROWSE_BUTTON_NAME_DICT[layer], label="...", width=50,
                         command=lambda *args, b=BROWSE_BUTTON_NAME_DICT[layer]: browse(b), annotation=paths_dict[layer])
@@ -691,4 +822,4 @@ class display_layer_ui(object):
         cmds.button(label="Add Layer", command=add_layer)
 
 
-display_layer_ui().create_display_layer_ui()
+#display_layer_ui().create_display_layer_ui()
