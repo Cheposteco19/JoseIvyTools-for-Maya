@@ -31,6 +31,8 @@ def soft_texture_borders(selected_items):
 
     for item in selected_items:
         if cmds.objExists(item):
+            cmds.select(clear=True)
+            cmds.select(item, replace=True)
             cmds.UnlockNormals()
             cmds.polySetToFaceNormal(item)
             mm.eval('polyUVBorderHard;')
