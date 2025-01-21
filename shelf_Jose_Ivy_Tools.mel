@@ -109,5 +109,39 @@ global proc shelf_Jose_Ivy_Tools () {
         -commandRepeatable 1
         -flat 1
     ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "User Script" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Renamer" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "renamePreset.png" 
+        -image1 "renamePreset.png" 
+        -style "iconOnly" 
+        -marginWidth 0
+        -marginHeight 1
+        -command "import maya.cmds as cmds\n\nclass RenamingToolUI:\n    def __init__(self):\n        self.window = \"RenamingToolWindow\"\n        \n        # Check if the window exists and delete if so\n        if cmds.window(self.window, exists=True):\n            cmds.deleteUI(self.window)\n        \n        # Create window with fixed size\n        self.window = cmds.window(self.window, title=\"Renaming Tool\", widthHeight=(350, 480), sizeable=False)\n        self.main_layout = cmds.columnLayout(adjustableColumn=True)\n\n        # Header\n        cmds.separator(height=15, style='none')\n        cmds.text(label=\"Rigging Renamer Tool\", font=\"boldLabelFont\", align=\"center\")\n        cmds.separator(height=15, style='none')\n\n        # Replace Functionality\n        cmds.frameLayout(label=\"Replace Text\", collapsable=True, collapse=False)\n        cmds.text(label=\"Replace (e.g., 'R_' with 'L_')\", align=\"center\")\n        cmds.rowLayout(numberOfColumns=2, adjustableColumn=2)\n        cmds.text(label=\"From:\")\n        self.replace_from = cmds.textField()\n        cmds.setParent(\"..\")\n        cmds.rowLayout(numberOfColumns=2, adjustableColumn=2)\n        cmds.text(label=\"To:\")\n        self.replace_to = cmds.textField()\n        cmds.setParent(\"..\")\n        cmds.button(label=\"Apply Replacement\", bgc=(0.6, 0.8, 1.0), command=self.apply_replace, annotation=\"Replace specified text in selected names\")\n        cmds.setParent(\"..\")\n        \n        # Suffix Functionality\n        cmds.frameLayout(label=\"Add Suffix\", collapsable=True, collapse=False)\n        cmds.text(label=\"Suffix Text\", align=\"center\")\n        self.suffix_text = cmds.textField()\n        cmds.button(label=\"Add Suffix\", bgc=(0.8, 1.0, 0.8), command=self.apply_suffix, annotation=\"Add specified suffix to selected names\")\n        cmds.setParent(\"..\")\n\n        # Prefix Functionality\n        cmds.frameLayout(label=\"Add Prefix\", collapsable=True, collapse=False)\n        cmds.text(label=\"Prefix Text\", align=\"center\")\n        self.prefix_text = cmds.textField()\n        cmds.button(label=\"Add Prefix\", bgc=(1.0, 0.8, 0.8), command=self.apply_prefix, annotation=\"Add specified prefix to selected names\")\n        cmds.setParent(\"..\")\n        \n        # Remove Functionality\n        cmds.frameLayout(label=\"Remove Text\", collapsable=True, collapse=False)\n        cmds.text(label=\"Text to Remove\", align=\"center\")\n        self.remove_text = cmds.textField()\n        cmds.button(label=\"Remove Text\", bgc=(1.0, 0.6, 0.6), command=self.apply_remove, annotation=\"Remove specified text from selected names\")\n        cmds.setParent(\"..\")\n\n        # Reset Button\n        cmds.separator(height=10, style='in')\n        cmds.button(label=\"Reset All Fields\", command=self.reset_fields, bgc=(1.0, 0.7, 0.7), annotation=\"Clear all input fields\")\n        \n        # Show window with fixed size\n        cmds.showWindow(self.window)\n\n    def apply_replace(self, *args):\n        joint_list = cmds.ls(sl=True, long=True)\n        replace_from = cmds.textField(self.replace_from, query=True, text=True)\n        replace_to = cmds.textField(self.replace_to, query=True, text=True)\n        \n        for each in joint_list[::-1]:\n            last_object = each.split(\"|\")[-1]\n            new_name = last_object.replace(replace_from, replace_to)\n            cmds.rename(each, new_name)\n    \n    def apply_suffix(self, *args):\n        joint_list = cmds.ls(sl=True, long=True)\n        suffix_text = cmds.textField(self.suffix_text, query=True, text=True)\n        \n        for each in joint_list[::-1]:\n            last_object = each.split(\"|\")[-1]\n            new_name = f\"{last_object}_{suffix_text}\"\n            cmds.rename(each, new_name)\n\n    def apply_prefix(self, *args):\n        joint_list = cmds.ls(sl=True, long=True)\n        prefix_text = cmds.textField(self.prefix_text, query=True, text=True)\n        \n        for each in joint_list[::-1]:\n            last_object = each.split(\"|\")[-1]\n            new_name = f\"{prefix_text}_{last_object}\"\n            cmds.rename(each, new_name)\n\n    def apply_remove(self, *args):\n        joint_list = cmds.ls(sl=True, long=True)\n        remove_text = cmds.textField(self.remove_text, query=True, text=True)\n        \n        for each in joint_list[::-1]:\n            last_object = each.split(\"|\")[-1]\n            new_name = last_object.replace(remove_text, \"\")\n            cmds.rename(each, new_name)\n\n    def reset_fields(self, *args):\n        cmds.textField(self.replace_from, edit=True, text=\"\")\n        cmds.textField(self.replace_to, edit=True, text=\"\")\n        cmds.textField(self.suffix_text, edit=True, text=\"\")\n        cmds.textField(self.prefix_text, edit=True, text=\"\")\n        cmds.textField(self.remove_text, edit=True, text=\"\")\n\n# Run the enhanced UI\nRenamingToolUI()" 
+        -sourceType "mel" 
+        -commandRepeatable 1
+        -flat 1
+    ;
 
 } 
