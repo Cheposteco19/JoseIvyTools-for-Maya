@@ -151,7 +151,7 @@ class uv_tool_window(object):
 
         # Credits
         cmds.rowLayout(numberOfColumns=2, adjustableColumn=2)
-        cmds.text(label='V 1.3.0')
+        cmds.text(label='V 3.0.0')
         cmds.text(label='GD67_JoseMunguia   ', align='right')
         print('UV UI content created')
 

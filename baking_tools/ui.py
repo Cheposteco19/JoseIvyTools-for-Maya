@@ -456,7 +456,7 @@ def add_layer(*args):
         rename_layer_popup(new_layer)
 
     # After creating the layer, move it to the bottom
-    move_layer_to_bottom(new_layer)
+    # move_layer_to_bottom(new_layer)
 
     # Update the UI to reflect the new layer
     update_display_layer_ui()
@@ -925,3 +925,8 @@ class display_layer_ui(object):
 
         # Add Layer Button
         cmds.button(label="Add Layer", command=add_layer)
+
+        # Credits
+        cmds.rowLayout(numberOfColumns=2, adjustableColumn=2)
+        cmds.text(label='V 3.0.0')
+        cmds.text(label='GD67_JoseMunguia & GD68_IvyMedina   ', align='right')
