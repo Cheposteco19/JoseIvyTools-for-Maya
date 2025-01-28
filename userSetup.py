@@ -2,8 +2,7 @@ from maya import cmds
 from uv_tools import core as uv_tools_core
 from uv_tools import ui as uv_tools_ui
 from baking_tools import ui as baking_tools_ui
-import maya.utils
-
+from layer_editor_tools import ui as layer_editor_tools_ui
 
 #UV window component names
 UV_TOOLOS_WINDOW_NAME= 'uv_editing_tool_ui'
@@ -42,13 +41,169 @@ LIGHT_BLUE=(.2,.2,.4)
 BLUE=(.2,.2,.3)
 DARK_BLUE=(.1,.1,.2)
 
-LAYER_EDITOR_OPENED=False
-
 if cmds.workspaceControl(BAKE_WINDOW_NAME, exists=True):
     cmds.deleteUI(BAKE_WINDOW_NAME)
 if cmds.workspaceControl(UV_TOOLOS_WINDOW_NAME, exists=True):
     cmds.deleteUI(UV_TOOLOS_WINDOW_NAME)
-    print('UV_tools_deleted')
+
+class export_tool_window(object):
+
+    def __init__(self):
+        print('bake_tool_created')
+
+    def create_ui(self,*args):
+        """
+
+        Creates the window
+
+        """
+        paths_dict=baking_tools_ui.read_directory_from_file()
+
+        #Auto-Unwrap
+        cmds.columnLayout(adjustableColumn=True, columnOffset=('both',10))
+        cmds.columnLayout(adjustableColumn=True, backgroundColor=BLUE)
+
+
+        #Colapsable menu 1
+        cmds.frameLayout('BAKED', collapsable=True, collapse=False, backgroundColor=DARK_BLUE, fn='boldLabelFont')
+        cmds.checkBox(AUTOUNWRAP_CHECK_BOX_NAME, label="Auto-Unwrap Slot 1", annotation="auto-unwrap / unfold / kills history and numbers", highlightColor=DARK_BLUE)
+
+        # Browse Low Export
+        cmds.rowLayout(numberOfColumns=4,adjustableColumn=2)
+        cmds.text(label='1 ')
+        if paths_dict.get(LOW_POLY_PATH_TEXT_BOX_NAME) is not None:
+            cmds.textField(LOW_POLY_PATH_TEXT_BOX_NAME, text=paths_dict[LOW_POLY_PATH_TEXT_BOX_NAME], backgroundColor=DARK_BLUE)
+        else:
+            cmds.textField(LOW_POLY_PATH_TEXT_BOX_NAME, backgroundColor=DARK_BLUE)
+        cmds.button(label='...',command=baking_tools_ui.browse_low, backgroundColor=LIGHT_BLUE)
+        cmds.button(label='Export LOW',command=baking_tools_ui.low_exportFBX,width=73, backgroundColor=LIGHT_BLUE, annotation='unlock normals / conditions normals')
+        cmds.setParent('..')
+
+        # Browse High Export
+        cmds.rowLayout(numberOfColumns=4,adjustableColumn=2)
+        cmds.text(label='2 ')
+        if paths_dict.get(HIGH_POLY_PATH_TEXT_BOX_NAME) is not None:
+            cmds.textField(HIGH_POLY_PATH_TEXT_BOX_NAME, text=paths_dict[HIGH_POLY_PATH_TEXT_BOX_NAME], backgroundColor=DARK_BLUE)
+        else:
+            cmds.textField(HIGH_POLY_PATH_TEXT_BOX_NAME, backgroundColor=DARK_BLUE)
+        cmds.button(label='...',command=baking_tools_ui.browse_high, backgroundColor=LIGHT_BLUE)
+        cmds.button(label='Export HIGH',command=baking_tools_ui.high_exportFBX, backgroundColor=LIGHT_BLUE)
+        cmds.setParent('..')
+        cmds.setParent('..')
+        cmds.setParent('..')
+
+        #Colapsable menu 2
+        cmds.columnLayout(adjustableColumn=True, backgroundColor=GREEN)
+        cmds.frameLayout('TILED',collapsable=True,collapse=True, backgroundColor=DARK_GREEN, fn='boldLabelFont')
+
+        # Browse Extra Export 1
+        cmds.rowLayout(numberOfColumns=4, adjustableColumn=2)
+        cmds.text(label='1 ')
+        if paths_dict.get(EXTRA_PATH_TEXT_BOX_NAME_1) is not None:
+            cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_1, text=paths_dict[EXTRA_PATH_TEXT_BOX_NAME_1], backgroundColor=DARK_GREEN)
+        else:
+            cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_1, backgroundColor=DARK_GREEN)
+        cmds.button(label='...', command=baking_tools_ui.browse_extra_1, backgroundColor=LIGHT_GREEN)
+        cmds.button(label='Export', command=baking_tools_ui.extra_exportFBX1, backgroundColor=LIGHT_GREEN)
+        cmds.setParent('..')
+
+        # Browse Extra Export 2
+        cmds.rowLayout(numberOfColumns=4, adjustableColumn=2)
+        cmds.text(label='2 ')
+        if paths_dict.get(EXTRA_PATH_TEXT_BOX_NAME_2) is not None:
+            cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_2, text=paths_dict[EXTRA_PATH_TEXT_BOX_NAME_2], backgroundColor=DARK_GREEN)
+        else:
+            cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_2, backgroundColor=DARK_GREEN)
+        cmds.button(label='...', command=baking_tools_ui.browse_extra_2, backgroundColor=LIGHT_GREEN)
+        cmds.button(label='Export', command=baking_tools_ui.extra_exportFBX2, backgroundColor=LIGHT_GREEN)
+        cmds.setParent('..')
+
+        # Browse Extra Export 3
+        cmds.rowLayout(numberOfColumns=4, adjustableColumn=2)
+        cmds.text(label='3 ')
+        if paths_dict.get(EXTRA_PATH_TEXT_BOX_NAME_3) is not None:
+            cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_3, text=paths_dict[EXTRA_PATH_TEXT_BOX_NAME_3], backgroundColor=DARK_GREEN)
+        else:
+            cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_3, backgroundColor=DARK_GREEN)
+        cmds.button(label='...', command=baking_tools_ui.browse_extra_3, backgroundColor=LIGHT_GREEN)
+        cmds.button(label='Export', command=baking_tools_ui.extra_exportFBX3, backgroundColor=LIGHT_GREEN)
+        cmds.setParent('..')
+
+        # Browse Extra Export 4
+        cmds.rowLayout(numberOfColumns=4, adjustableColumn=2)
+        cmds.text(label='4 ')
+        if paths_dict.get(EXTRA_PATH_TEXT_BOX_NAME_4) is not None:
+            cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_4, text=paths_dict[EXTRA_PATH_TEXT_BOX_NAME_4], backgroundColor=DARK_GREEN)
+        else:
+            cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_4, backgroundColor=DARK_GREEN)
+        cmds.button(label='...', command=baking_tools_ui.browse_extra_4, backgroundColor=LIGHT_GREEN)
+        cmds.button(label='Export', command=baking_tools_ui.extra_exportFBX4, backgroundColor=LIGHT_GREEN)
+        cmds.setParent('..')
+
+        # Browse Extra Export 5
+        cmds.rowLayout(numberOfColumns=4, adjustableColumn=2)
+        cmds.text(label='5 ')
+        if paths_dict.get(EXTRA_PATH_TEXT_BOX_NAME_5) is not None:
+            cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_5, text=paths_dict[EXTRA_PATH_TEXT_BOX_NAME_5], backgroundColor=DARK_GREEN)
+        else:
+            cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_5, backgroundColor=DARK_GREEN)
+        cmds.button(label='...', command=baking_tools_ui.browse_extra_5, backgroundColor=LIGHT_GREEN)
+        cmds.button(label='Export', command=baking_tools_ui.extra_exportFBX5, backgroundColor=LIGHT_GREEN)
+        cmds.setParent('..')
+
+        # Browse Extra Export 6
+        cmds.rowLayout(numberOfColumns=4, adjustableColumn=2)
+        cmds.text(label='6 ')
+        if paths_dict.get(EXTRA_PATH_TEXT_BOX_NAME_6) is not None:
+            cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_6, text=paths_dict[EXTRA_PATH_TEXT_BOX_NAME_6], backgroundColor=DARK_GREEN)
+        else:
+            cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_6, backgroundColor=DARK_GREEN)
+        cmds.button(label='...', command=baking_tools_ui.browse_extra_6, backgroundColor=LIGHT_GREEN)
+        cmds.button(label='Export', command=baking_tools_ui.extra_exportFBX6, backgroundColor=LIGHT_GREEN)
+        cmds.setParent('..')
+
+        # Browse Extra Export 7
+        cmds.rowLayout(numberOfColumns=4, adjustableColumn=2)
+        cmds.text(label='7 ')
+        if paths_dict.get(EXTRA_PATH_TEXT_BOX_NAME_7) is not None:
+            cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_7, text=paths_dict[EXTRA_PATH_TEXT_BOX_NAME_7],
+                           backgroundColor=DARK_GREEN)
+        else:
+            cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_7, backgroundColor=DARK_GREEN)
+        cmds.button(label='...', command=baking_tools_ui.browse_extra_7, backgroundColor=LIGHT_GREEN)
+        cmds.button(label='Export', command=baking_tools_ui.extra_exportFBX7, backgroundColor=LIGHT_GREEN)
+        cmds.setParent('..')
+
+        # Browse Extra Export 8
+        cmds.rowLayout(numberOfColumns=4, adjustableColumn=2)
+        cmds.text(label='8 ')
+        if paths_dict.get(EXTRA_PATH_TEXT_BOX_NAME_8) is not None:
+            cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_8, text=paths_dict[EXTRA_PATH_TEXT_BOX_NAME_8],
+                           backgroundColor=DARK_GREEN)
+        else:
+            cmds.textField(EXTRA_PATH_TEXT_BOX_NAME_8, backgroundColor=DARK_GREEN)
+        cmds.button(label='...', command=baking_tools_ui.browse_extra_8, backgroundColor=LIGHT_GREEN)
+        cmds.button(label='Export', command=baking_tools_ui.extra_exportFBX8, backgroundColor=LIGHT_GREEN)
+        cmds.setParent('..')
+        cmds.setParent('..')
+        cmds.setParent('..')
+
+        #Credits
+        cmds.rowLayout(numberOfColumns=2, adjustableColumn=2)
+        cmds.text(label='V 3.0.0')
+        cmds.text(label='GD67_JoseMunguia   ', align='right')
+
+    def show_ui(self):
+        #Initialize Unfold3D
+        cmds.loadPlugin("Unfold3D.mll")
+
+        # Delete old window
+        if not cmds.workspaceControl(BAKE_WINDOW_NAME, exists=True):
+            cmds.workspaceControl(BAKE_WINDOW_NAME, floating=True, label='Exporter', uiScript='export_tool_window().create_ui()', width=500, height=150, retain=False)
+
+        cmds.workspaceControl(BAKE_WINDOW_NAME, edit=True, restore=True)
+        cmds.workspaceControl(BAKE_WINDOW_NAME, edit=True, visible=True)
+
 
 class uv_tool_window(object):
     def __init__(self):
@@ -153,41 +308,38 @@ class uv_tool_window(object):
         cmds.rowLayout(numberOfColumns=2, adjustableColumn=2)
         cmds.text(label='V 3.0.0')
         cmds.text(label='GD67_JoseMunguia   ', align='right')
-        print('UV UI content created')
 
     def show_ui(self):
         # Initialize Unfold3D
-        print('UV show ui')
         cmds.loadPlugin("Unfold3D.mll")
         if not cmds.workspaceControl(UV_TOOLOS_WINDOW_NAME, exists=True):
             cmds.workspaceControl(UV_TOOLOS_WINDOW_NAME, label='UV tools', width=291, height=255, retain=False,
                                   floating=True, uiScript='uv_tool_window().create_ui()')
-            print('UV did not exist')
         cmds.workspaceControl(UV_TOOLOS_WINDOW_NAME, edit=True, restore=True)
         cmds.workspaceControl(UV_TOOLOS_WINDOW_NAME, edit=True, visible=True)
 
 #Layer editor
 def load_layer_editor():
     print("Loading layer editor...")
-    if not cmds.workspaceControl(baking_tools_ui.DISPLAY_LAYER_WORKSPACE_CONTROL_NAME, exists=True):
+    if not cmds.workspaceControl(layer_editor_tools_ui.DISPLAY_LAYER_WORKSPACE_CONTROL_NAME, exists=True):
         print('Workspace didnt exist')
-        cmds.workspaceControl(baking_tools_ui.DISPLAY_LAYER_WORKSPACE_CONTROL_NAME, label="Display Layer Editor",
+        cmds.workspaceControl(layer_editor_tools_ui.DISPLAY_LAYER_WORKSPACE_CONTROL_NAME, label="Display Layer Editor",
                               retain=False, floating=True,
-                              uiScript='baking_tools_ui.display_layer_ui().create_display_layer_ui()')
+                              uiScript='layer_editor_tools_ui.display_layer_ui().create_display_layer_ui()')
 
     # Create the workspace control and set it to restore the previous state
     else:
         print('Workspace existed')
 
-    cmds.workspaceControl(baking_tools_ui.DISPLAY_LAYER_WORKSPACE_CONTROL_NAME, edit=True, restore=True)
-    cmds.workspaceControl(baking_tools_ui.DISPLAY_LAYER_WORKSPACE_CONTROL_NAME, edit=True, visible=True)
+    cmds.workspaceControl(layer_editor_tools_ui.DISPLAY_LAYER_WORKSPACE_CONTROL_NAME, edit=True, restore=True)
+    cmds.workspaceControl(layer_editor_tools_ui.DISPLAY_LAYER_WORKSPACE_CONTROL_NAME, edit=True, visible=True)
 
 
 def on_scene_change():
     print("Scene changed...")
-    if not cmds.workspaceControl(baking_tools_ui.DISPLAY_LAYER_WORKSPACE_CONTROL_NAME, exists=True):
+    if not cmds.workspaceControl(layer_editor_tools_ui.DISPLAY_LAYER_WORKSPACE_CONTROL_NAME, exists=True):
         return
-    baking_tools_ui.update_display_layer_ui()
+    layer_editor_tools_ui.update_display_layer_ui()
 
 def create_script_jobs():
     print("Creating script jobs...")
