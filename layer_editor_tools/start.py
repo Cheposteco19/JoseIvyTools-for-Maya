@@ -6,6 +6,6 @@ try:
 except ImportError:
     import traceback
     traceback.print_exc()
-    cmds.warning("Failed to import 'layer_editor.ui'. Make sure the module is correctly installed and accessible.")
+    cmds.warning("Failed to import 'baking_tools.ui'. Make sure the module is correctly installed and accessible.")
 except AttributeError:
-    cmds.warning("'show_ui' function not found in 'layer_editor.ui' module.")
+    cmds.warning("'show_ui' function not found in 'baking_tools.ui' module.")
