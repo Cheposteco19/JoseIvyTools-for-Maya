@@ -655,7 +655,7 @@ class display_layer_ui(object):
         if not cmds.workspaceControl(DISPLAY_LAYER_WORKSPACE_CONTROL_NAME, exists=True):
             # Create the workspace control and set it to restore the previous state
             cmds.workspaceControl(DISPLAY_LAYER_WORKSPACE_CONTROL_NAME, label="Display Layer Editor", retain=False, floating=True,
-                                  uiScript='layer_editor_ui.display_layer_ui().create_display_layer_ui()')
+                                  uiScript='layer_editor_tools_ui.display_layer_ui().create_display_layer_ui()')
         cmds.workspaceControl(DISPLAY_LAYER_WORKSPACE_CONTROL_NAME, edit=True, restore=True)
         cmds.workspaceControl(DISPLAY_LAYER_WORKSPACE_CONTROL_NAME, edit=True, visible=True)
 
