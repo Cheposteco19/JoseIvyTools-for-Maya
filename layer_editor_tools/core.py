@@ -40,27 +40,64 @@ def soft_texture_borders(selected_items):
             cmds.warning(f"Item {item} does not exist.")
 
 def ucx_process(static_mesh):
-    group='{}_grp'.format(static_mesh)
-    static_mesh='SM_{}'.format(static_mesh)
-    ucx='UCX_{}'.format(static_mesh)
-    cmds.rename(static_mesh)
-    cmds.duplicate(static_mesh,name=ucx)
-    cmds.group(static_mesh,ucx,n=group)
-    return static_mesh
+    """
+    Processes a static mesh to create a UCX group.
+    - Does not duplicate the static mesh.
+    - Creates an empty UCX group if not already present.
+    - Moves any existing UCX mesh into the UCX group.
+    """
+    group_name = f"UCX_{static_mesh}_grp"
+    ucx_mesh = f"UCX_SM_{static_mesh}"
+
+    # Create UCX group if it does not exist
+    if not cmds.objExists(group_name):
+        cmds.group(empty=True, name=group_name)
+        print(f"Created UCX group: {group_name}")
+    else:
+        print(f"UCX group {group_name} already exists.")
+
+    # If UCX mesh exists, move it inside the UCX group
+    if cmds.objExists(ucx_mesh):
+        current_parent = cmds.listRelatives(ucx_mesh, parent=True)
+        if not current_parent or current_parent[0] != group_name:
+            cmds.parent(ucx_mesh, group_name)
+            print(f"Moved {ucx_mesh} into {group_name}.")
+    else:
+        print(f"No existing UCX mesh found for {ucx_mesh}. UCX group remains empty.")
+
+    return static_mesh  # Return the original mesh name
     
 def ucx_process_mult(selected_objects):
     """
-    Processes multiple selected objects to create UCX copies, group them, 
-    and return the list of new static meshes (originals with SM_ prefix).
+    Processes multiple selected objects:
+    - No duplication.
+    - Creates an empty UCX group for each static mesh.
+    - Moves any existing UCX mesh (`UCX_SM_<mesh>`) into the UCX group.
+    - Returns a list of tuples: (original mesh, UCX group name).
     """
     ucx_groups = []
+
     for obj in selected_objects:
-        group = '{}_grp'.format(obj)
-        static_mesh = 'SM_{}'.format(obj)
-        ucx = 'UCX_{}'.format(static_mesh)
-        cmds.rename(obj, static_mesh)  # Rename the original object
-        cmds.duplicate(static_mesh, name=ucx)  # Duplicate to create UCX
-        cmds.group(static_mesh, ucx, n=group)  # Group the original and UCX copy
-        ucx_groups.append((static_mesh, ucx, group))  # Keep track of renamed objects and their groups
-    return ucx_groups  # Return a list of tuples (original object, UCX copy, group)
-   
+        static_mesh = f"SM_{obj}"
+        ucx_group_name = f"UCX_{obj}_grp"
+        ucx_mesh_name = f"UCX_SM_{obj}"
+
+        # Create UCX group if it does not exist
+        if not cmds.objExists(ucx_group_name):
+            cmds.group(empty=True, name=ucx_group_name)
+            print(f"Created UCX group: {ucx_group_name}")
+        else:
+            print(f"UCX group {ucx_group_name} already exists.")
+
+        # If UCX mesh exists, move it inside the UCX group
+        if cmds.objExists(ucx_mesh_name):
+            current_parent = cmds.listRelatives(ucx_mesh_name, parent=True)
+            if not current_parent or current_parent[0] != ucx_group_name:
+                cmds.parent(ucx_mesh_name, ucx_group_name)
+                print(f"Moved {ucx_mesh_name} into {ucx_group_name}.")
+        else:
+            print(f"No existing UCX mesh found for {ucx_mesh_name}. UCX group remains empty.")
+
+        ucx_groups.append((static_mesh, ucx_group_name))
+
+    return ucx_groups  # Return list of tuples (original object, UCX group)  
